@@ -1,5 +1,52 @@
 
-.navbar {
+.main-color {
   background-color: #4169E1;
 }
 
+.show-comments-button {
+  background-color: white;
+  color: #4169E1;
+  border-color: #385cc5;
+}
+
+.show-comments-button:hover {
+  background-color: #4169E1;
+  color: white;
+  border-color: #4169E1;
+}
+
+.hide-comments-button {
+  background-color: #4169E1;
+  color: white;
+  border-color: #4169E1;
+}
+
+.hide-comments-button:hover {
+  background-color: white;
+  color: #4169E1;
+  border-color: #385cc5;
+}
+
+.add-comment-button {
+  background-color: white;
+  color: #f0ad4e;
+  border-color: #f0ad4e;
+}
+
+.add-comment-button:hover {
+  background-color: #f0ad4e;
+  color: white;
+  border-color: #f0ad4e;
+}
+
+.interesting-button {
+  background: none;
+  border: none;
+  color: #f0ad4e;  /* golden star */
+  font-size: 1.2rem;
+}
+
+.interesting-button:hover {
+  color: #d58512;
+  cursor: pointer;
+}
