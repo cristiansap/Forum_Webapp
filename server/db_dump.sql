@@ -51,4 +51,96 @@ VALUES
 ('u5@p.it','Fabio', 0, 'ee9502ac5a0b3d99caabb28b8a3a4b60d3d389ac17f7a79e5c0a84b2604f459d','21a948f946a7aec6',NULL);
 
 
+---- POSTS INSERTION ----
+
+-- POSTS by Cristian (user_ID = 1)
+INSERT INTO POST (title, user_ID, text, max_comments) VALUES
+('Welcome to the Forum', 1, 'This is the first official post from the admin team.', 5),
+('Security Tips', 1, 'Some basic tips to keep your accounts safe online.', 4);
+
+-- POSTS by Sofia (user_ID = 2)
+INSERT INTO POST (title, user_ID, text, max_comments) VALUES
+('New Features Coming Soon', 2, 'We are working on exciting new features. Stay tuned!', NULL),
+('Bug Report Guidelines', 2, 'Please follow these steps to report bugs effectively.', 3);
+
+-- POSTS by Anna (user_ID = 3)
+INSERT INTO POST (title, user_ID, text, max_comments) VALUES
+('My Experience with React', 3, 'I want to share my learning journey with React.', 2),
+('Study Tips for Exams', 3, 'Organize your study sessions and take regular breaks!', NULL);
+
+-- POSTS by Marika (user_ID = 4)
+INSERT INTO POST (title, user_ID, text, max_comments) VALUES
+('Photography Passion', 4, 'Sharing some of my favorite moments captured on camera.', 5),
+('Travel Diary', 4, 'My travel notes from last summer in Italy.', NULL);
+
+
+
+---- COMMENTS INSERTION ----
+
+-- Comments on post ID 1 (Cristian, max 5)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Great start!', 2, 1),
+('Looking forward to more updates.', NULL, 1),
+('Nice job.', 3, 1),
+('Well done!', 4, 1),
+('Very informative.', 5, 1); -- maximum reached
+
+-- Comments on post ID 2 (Cristian, max 4) -> NOTE: 3 comments (1 less than the maximum)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Thanks for the tips!', NULL, 2),
+('Very helpful.', 4, 2),
+('Good reminder.', 3, 2); -- STOP: 1 less than the maximum
+
+-- Comments on post ID 3 (Sofia, no max)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Can’t wait to see them!', 1, 3),
+('Awesome!', 4, 3);
+
+-- Comments on post ID 4 (Sofia, max 3)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Thanks for the guide.', 5, 4),
+('Clear and helpful.', NULL, 4),
+('I’ll follow this.', 3, 4); -- maximum reached
+
+-- Comments on post ID 5 (Anna, max 2) -> NOTE: 1 comment (1 less than the maximum)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Great insights, thank you!', 2, 5);  -- STOP: 1 less than the maximum
+
+-- Comments on post ID 6 (Anna, no max)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Good advice.', 1, 6),
+('Thanks!', NULL, 6);
+
+-- Comments on post ID 7 (Marika, max 5)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Love this!', 5, 7),
+('Your shots are amazing.', NULL, 7),
+('Keep sharing!', 3, 7);
+
+-- Comments on post ID 8 (Marika, no max)
+INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+('Italy is beautiful!', 2, 8),
+('Nice post!', 1, 8);
+
+
+
+---- INTERESTING INSERTIONS ----
+
+-- Cristian marks some comments as interesting
+INSERT INTO INTERESTING (user_ID, comment_ID) VALUES
+(1, 1), (1, 4), (1, 10);
+
+-- Sofia marks some comments as interesting
+INSERT INTO INTERESTING (user_ID, comment_ID) VALUES
+(2, 2), (2, 8);
+
+-- Anna marks some comments as interesting
+INSERT INTO INTERESTING (user_ID, comment_ID) VALUES
+(3, 5), (3, 12);
+
+-- Fabio marks some comments as interesting
+INSERT INTO INTERESTING (user_ID, comment_ID) VALUES
+(5, 7);
+
+
 COMMIT;

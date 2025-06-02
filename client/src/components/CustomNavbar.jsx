@@ -7,24 +7,16 @@ import '../App.css'
 
 function CustomNavbar(props) {
   return (
-    <Navbar expand="md" variant="dark" className="navbar navbar-padding">
-            <Navbar.Brand className="mx-2" href="index.html">
-                <i className="bi bi-gem" style={{ fontSize: '2rem', color: 'gold' }}></i>
-                Royal Forum
-            </Navbar.Brand>
-            <Form className="my-2 mx-auto inline" action="#" role="search" aria-label="Quick search">
-                <Form.Control type="search" placeholder="Search" aria-label="Search query" />
-            </Form>
-            {/* TODO: uncomment this part
-            <Nav>
-                <Navbar.Text className="mx-2 fs-5">
-                    {props.user && props.user.name && (<>Logged in as: <strong>{props.user.name}</strong></>)}
-                </Navbar.Text>
-                <Form className="mx-2 mt-1">
-                    {props.loggedIn ? <LogoutButton logout={props.logout} /> : <LoginButton />}
-                </Form>            
-            </Nav>*/}
-        </Navbar>
+    <Navbar variant="dark" className="main-color mb-4 ">
+        <Navbar.Brand className="mx-2">
+            <i className="bi bi-gem mx-2" style={{ fontSize: '1.3rem', color: 'gold' }} />
+            Royal Forum
+        </Navbar.Brand>
+        {/* REMOVE OR KEEP THE SEARCH BAR INSIDE THE NAVBAR ?? */}
+        <Form className="my-2 mx-auto inline" role="search" aria-label="Quick search">
+            <Form.Control type="search" placeholder="Search" aria-label="Search query" />
+        </Form>
+    </Navbar>
   );
 }
 

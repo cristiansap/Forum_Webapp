@@ -50,3 +50,38 @@
   color: #d58512;
   cursor: pointer;
 }
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-text {
+  visibility: hidden;  /* Tooltip hidden by default */
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  position: absolute;
+  bottom: 100%; /* above the button */
+  left: -10rem;
+  transform: none;
+  white-space: nowrap;  /* content all in one line */
+  font-size: 0.75rem;
+}
+
+/* Show tooltip on mouseover */
+.tooltip-wrapper:hover .tooltip-text {
+  visibility: visible;
+}
+
+.delete-post-btn:hover, .delete-comment-btn:hover {
+  background-color: #dc3545; /* same color as Bootstrap danger */
+  color: white;
+}
+
+.edit-comment-btn:hover {
+  background-color: #ffc107; /* same color as Bootstrap warning */
+  color: white;
+}

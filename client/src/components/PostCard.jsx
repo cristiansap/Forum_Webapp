@@ -1,8 +1,8 @@
-import { Card, Container, Button, Collapse, ListGroup } from 'react-bootstrap';
+import { Card, Button, Collapse, ListGroup, Row, Col } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 
 function PostCard(props) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(true);
 
   const handleToggle = () => {
@@ -35,23 +35,49 @@ function PostCard(props) {
                 <i className="bi bi-chat-square-text-fill me-1"></i>
                 Add Comment
               </Button>
+
+              <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
+                  onClick={() => console.log("POST DELETED!")}>
+                <i className="bi bi-trash-fill me-1" />
+                Delete Post
+              </Button>
             </div>
 
             <Collapse in={open}>
               <div className="mt-3">
-                <h6>Comments</h6>
+                <h5 className="mb-3">Comments</h5>
                 <ListGroup>
                   {props.comments.map((comment, idx) => (
-                    <ListGroup.Item key={idx} className="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div>{comment.text}</div>
-                        <small className="text-muted">
-                          — {comment.authorName || 'anonymous'} [{comment.timestamp}]
-                        </small>
+                    <ListGroup.Item key={idx}>
+                      <div className="d-flex align-items-start">
+                        
+                        {/* Golden star */}
+                        <Button variant="link" className="p-0 me-3 interesting-button tooltip-wrapper">
+                          <i className={`bi ${comment.interesting ? 'bi-star-fill' : 'bi-star'}`}></i>
+                          <span className="tooltip-text">Mark comment as interesting</span>
+                        </Button>
+
+                        {/* Comment text + author */}
+                        <div className="flex-grow-1">   {/* "flex-grow-1" ensure that the block occupies the central space */}
+                          <div>{comment.text}</div>
+                          <small className="text-muted">
+                            — {comment.authorName || 'anonymous'} [{comment.timestamp}]
+                          </small>
+                        </div>
+
+                        {/* Right-aligned buttons */}
+                        <div className="ms-2">
+                          <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
+                            onClick={() => console.log("Comment edited")} >
+                            <i className="bi bi-pencil-fill"></i>
+                          </Button>
+
+                          <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn me-2"
+                            onClick={() => console.log("Comment deleted")} >
+                            <i className="bi bi-trash-fill"></i>
+                          </Button>
+                        </div>
                       </div>
-                      <Button variant="link" className="p-0 ms-2 interesting-button">
-                        <i className={`bi ${comment.interesting ? 'bi-star-fill' : 'bi-star'}`}></i>
-                      </Button>
                     </ListGroup.Item>
                   ))}
                 </ListGroup>
@@ -59,8 +85,8 @@ function PostCard(props) {
             </Collapse>
           </>
         ) : (
-          <Button size="sm" disabled>
-            <i className="bi bi-lock-fill me-1"></i>
+          <Button className="main-color" size="sm" disabled>
+            <i className="bi bi-lock-fill me-1" />
             Login to view comments
           </Button>
         )}

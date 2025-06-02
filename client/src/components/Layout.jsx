@@ -2,6 +2,7 @@ import { Row, Col, Button, Alert } from 'react-bootstrap';
 import { Outlet, Link, useParams, Navigate } from 'react-router-dom';
 
 import { CustomNavbar } from './CustomNavbar';
+import { PostCard } from './PostCard'
 // TODO: import { LoginForm } from './Auth';
 import { useState, useEffect } from 'react';
 
@@ -17,7 +18,7 @@ function NotFoundLayout() {
     );
 }
 
-// TODO: re-watch it
+// TODO: work on it
 function LoginLayout(props) {
     return (
         <Row>
@@ -27,3 +28,94 @@ function LoginLayout(props) {
         </Row>
     );
 }
+
+function HeaderLayout(props) {
+    return (
+        <>
+            <Row>
+                <Col xs={12}>
+                    <CustomNavbar />
+                </Col>
+            </Row>
+
+
+            <Outlet />
+
+            <footer className="blockquote-footer ms-2 my-2"> &copy; 2025 Web Applications </footer>
+        </>
+    );
+}
+
+function BodyLayout(props) {
+
+    /* TODO: REMOVE THIS PART AS SOON AS INFORMATION ARE LOADED FROM THE SERVER */
+    const samplePosts = [
+        {
+            id: 1,
+            title: 'Welcome to Royal Forum!',
+            author: 'king@royal.com',
+            timestamp: '2025-06-01 14:15:00',
+            text: 'This is our first official post!',
+            maxComments: 10
+        },
+        {
+            id: 2,
+            title: 'Rules of the Forum',
+            author: 'queen@royal.com',
+            timestamp: '2025-06-01 16:30:00',
+            text: 'Please be respectful and kind to others.',
+            maxComments: 5
+        }
+    ];
+
+    const sampleComments = [
+        {
+            text: "Great post!",
+            authorName: "Luigi",
+            timestamp: "2025-06-01 10:40:01",
+            interesting: true,
+        },
+        {
+            text: "I disagree.",
+            authorName: null,  // anonymous
+            timestamp: "2025-06-01 10:45:12",
+            interesting: false,
+        },
+        {
+            text: "Very informative, thank you!",
+            authorName: "Peach",
+            timestamp: "2025-06-01 11:00:00",
+            interesting: true,
+        },
+        {
+            text: "Can you provide more details?",
+            authorName: "Toad",
+            timestamp: "2025-06-01 11:05:25",
+            interesting: false,
+        }
+    ];
+
+
+    function PostList() {
+        return (
+            <div>
+                {samplePosts
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                    .map(post => (
+                        <PostCard key={post.id} post={post} comments={sampleComments} />
+                    ))
+                }
+            </div>
+        );
+    };
+
+
+    return (
+        <>
+            <PostList />
+        </>
+    );
+}
+
+
+export { NotFoundLayout, LoginLayout, HeaderLayout, BodyLayout };
