@@ -1,33 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 import './App.css'
+import API from './API.js';
+
+import { useState, useEffect } from 'react';
+import { Container , Navbar , Form } from 'react-bootstrap';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+// TODO: import { GenericLayout, NotFoundLayout, AddLayout, EditLayout, LoginLayout } from './components/Layout';
+
 
 function App() {
-  const [count, setCount] = useState(0)
+
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Navbar variant="dark" className="navbar">
+            <Navbar.Brand className="mx-2" href="index.html">
+                <i className="bi bi-gem mx-2" style={{ fontSize: '1.3rem', color: 'gold' }}></i>
+                Royal Forum
+            </Navbar.Brand>
+            <Form className="my-2 mx-auto inline" action="#" role="search" aria-label="Quick search">
+                <Form.Control type="search" placeholder="Search" aria-label="Search query" />
+            </Form>
+        </Navbar>
     </>
   )
 }
