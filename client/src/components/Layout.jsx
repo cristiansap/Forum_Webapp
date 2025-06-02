@@ -53,18 +53,20 @@ function BodyLayout(props) {
         {
             id: 1,
             title: 'Welcome to Royal Forum!',
-            author: 'king@royal.com',
+            author: 'king Mark',
             timestamp: '2025-06-01 14:15:00',
-            text: 'This is our first official post!',
+            text: 'This is our first official post! \nThis is the Royal Forum: \nwhere discussions are available and new people may help you!',
+            commentCount: 4,   // NOTE: THIS INFORMATION WILL NOT BE AVAILABLE DIRECTLY, IT WILL BE RETRIEVED WITH A PROPER SQL QUERY
             maxComments: 10
         },
         {
             id: 2,
             title: 'Rules of the Forum',
-            author: 'queen@royal.com',
+            author: 'queen Lady',
             timestamp: '2025-06-01 16:30:00',
             text: 'Please be respectful and kind to others.',
-            maxComments: 5
+            commentCount: 4,
+            maxComments: null
         }
     ];
 
@@ -112,7 +114,25 @@ function BodyLayout(props) {
 
     return (
         <>
+            <div className="top-bar d-flex justify-content-end me-4">
+                <Button className="main-color add-post-button">
+                    <i className="bi bi-plus-circle me-1" /> Add post
+                </Button>
+
+                {/*
+                  *  TODO: IMPLEMENT THE FACT THAT IF THE USER IS AUTHENTICATED, SHOW THE BUTTON ABOVE, OTHERWISE THE ONE BELOW
+                  
+                <Button className="main-color" size="sm" disabled>
+                <i className="bi bi-lock-fill me-1" />
+                    Login to add posts
+                </Button>
+
+                */
+                }
+            </div>
+
             <PostList />
+
         </>
     );
 }

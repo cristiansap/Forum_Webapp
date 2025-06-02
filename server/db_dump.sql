@@ -56,7 +56,10 @@ VALUES
 -- POSTS by Cristian (user_ID = 1)
 INSERT INTO POST (title, user_ID, text, max_comments) VALUES
 ('Welcome to the Forum', 1, 'This is the first official post from the admin team.', 5),
-('Security Tips', 1, 'Some basic tips to keep your accounts safe online.', 4);
+('Security Tips', 1,
+'Some basic tips to keep your accounts safe online.\n1. Use strong passwords.\n2. Enable two-factor authentication.\n3. Avoid clicking suspicious links.',
+4);                       -- example of multiline text for a post
+
 
 -- POSTS by Sofia (user_ID = 2)
 INSERT INTO POST (title, user_ID, text, max_comments) VALUES
@@ -79,7 +82,7 @@ INSERT INTO POST (title, user_ID, text, max_comments) VALUES
 
 -- Comments on post ID 1 (Cristian, max 5)
 INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Great start!', 2, 1),
+('Great start!\n\nI hope this forum grows quickly.', 2, 1),       -- example of multiline text for a comment
 ('Looking forward to more updates.', NULL, 1),
 ('Nice job.', 3, 1),
 ('Well done!', 4, 1),

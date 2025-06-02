@@ -3,6 +3,10 @@
   background-color: #4169E1;
 }
 
+.add-post-button:hover {
+  background-color: #3a60d3;
+}
+
 .show-comments-button {
   background-color: white;
   color: #4169E1;
@@ -39,6 +43,13 @@
   border-color: #f0ad4e;
 }
 
+/* Set the properties when the user presses the button */
+.add-comment-button:active {
+  background-color: #f0ad4e !important;
+  color: white !important;
+  border-color: #cf923d !important;
+}
+
 .interesting-button {
   background: none;
   border: none;
@@ -49,6 +60,14 @@
 .interesting-button:hover {
   color: #d58512;
   cursor: pointer;
+}
+
+.edit-comment-btn:active {
+  color: #ffc107 !important;   /* same color as Bootstrap warning */
+}
+
+.edit-comment-btn:active i {
+  color: white !important;
 }
 
 .tooltip-wrapper {
@@ -64,7 +83,7 @@
   padding: 4px 8px;
   border-radius: 4px;
   position: absolute;
-  bottom: 100%; /* above the button */
+  bottom: 100%;  /* above the button */
   left: -10rem;
   transform: none;
   white-space: nowrap;  /* content all in one line */
@@ -84,4 +103,10 @@
 .edit-comment-btn:hover {
   background-color: #ffc107; /* same color as Bootstrap warning */
   color: white;
+}
+
+/* Correctly handle '\n' characters in post and comment text */
+.multiline-title {
+  white-space: pre-line !important;   /* enable '\n' */
+  overflow-wrap: break-word !important;  /* force line break where needed */
 }

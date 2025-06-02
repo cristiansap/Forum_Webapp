@@ -9,7 +9,7 @@ import { NotFoundLayout, LoginLayout, HeaderLayout, BodyLayout } from './compone
 import { useState, useEffect } from 'react';
 import { Container , Navbar , Form } from 'react-bootstrap';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-// TODO: import { GenericLayout, NotFoundLayout, AddLayout, EditLayout, LoginLayout } from './components/Layout';
+
 
 
 function App() {
