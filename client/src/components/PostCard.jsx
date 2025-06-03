@@ -64,7 +64,7 @@ function PostCard(props) {
           </Card.Title>
           <small className="text-muted">{props.post.timestamp}</small>
         </div>
-        <Card.Subtitle className="mb-2 text-muted">by {props.post.author || 'anonymous'}</Card.Subtitle>
+        <Card.Subtitle className="mb-2 text-muted">by {props.post.author}</Card.Subtitle>
 
         {/* Text of the post */}
         <Card.Text>{props.post.text}</Card.Text>

@@ -108,5 +108,4 @@
 /* Correctly handle '\n' characters in post and comment text */
 .multiline-title {
   white-space: pre-line !important;   /* enable '\n' */
-  overflow-wrap: break-word !important;  /* force line break where needed */
 }

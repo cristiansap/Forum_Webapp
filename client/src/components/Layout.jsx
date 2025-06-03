@@ -55,7 +55,7 @@ function BodyLayout(props) {
             title: 'Welcome to Royal Forum!',
             author: 'king Mark',
             timestamp: '2025-06-01 14:15:00',
-            text: 'This is our first official post! \nThis is the Royal Forum: \nwhere discussions are available and new people may help you!',
+            text: 'This is our first official post! \nThis is the Royal Forum: where a lot of discussions are available and new people may help you to discover something curious!',
             commentCount: 4,   // NOTE: THIS INFORMATION WILL NOT BE AVAILABLE DIRECTLY, IT WILL BE RETRIEVED WITH A PROPER SQL QUERY
             maxComments: 10
         },
