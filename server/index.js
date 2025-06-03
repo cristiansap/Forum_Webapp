@@ -38,14 +38,14 @@ const LocalStrategy = require('passport-local');   // authentication strategy (u
  **/
 passport.use(new LocalStrategy(async function verify(username, password, callback) {
   const user = await userDao.getUser(username, password)
-  if(!user)
-    return callback(null, false, 'Incorrect username or password');  
-    
+  if (!user)
+    return callback(null, false, 'Incorrect username or password');
+
   return callback(null, user); // NOTE: user info in the session (all fields returned by userDao.getUser)
 }));
 
 // Serializing in the session the user object given from LocalStrategy(verify)
-passport.serializeUser(function (user, callback) { 
+passport.serializeUser(function (user, callback) {
   callback(null, user);
 });
 
@@ -69,10 +69,10 @@ app.use(passport.authenticate('session'));
 
 /** Defining authentication verification middleware **/
 const isLoggedIn = (req, res, next) => {
-  if(req.isAuthenticated()) {
+  if (req.isAuthenticated()) {
     return next();
   }
-  return res.status(401).json({error: 'Not authorized'});
+  return res.status(401).json({ error: 'Not authorized' });
 }
 
 
@@ -106,38 +106,59 @@ app.get('/api/posts',
 // POST /api/posts
 // This route adds a new post to the forum.
 app.post('/api/posts',
-    [
-      check('title').isLength({ min: 1, max: 100 }),
-      check('text').isLength({ min: 1 }),
-      check('maxComments').optional({ checkFalsy: true }).isInt({ min: 1 })   // if present and not falsy (e.g. null, ""), must be an integer >= 1
-    ],
-    async (req, res) => {
-        const errors = validationResult(req).formatWith(errorFormatter);  // format error message
-        if (!errors.isEmpty()) {
-            return res.status(422).json(errors.errors); // error message is sent back as a json with the error info
-        }
+  [
+    check('title').isLength({ min: 1, max: 100 }),
+    check('text').isLength({ min: 1 }),
+    check('maxComments').optional({ checkFalsy: true }).isInt({ min: 1 })   // if present and not falsy (e.g. null, ""), must be an integer >= 1
+  ],
+  async (req, res) => {
+    const errors = validationResult(req).formatWith(errorFormatter);  // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json(errors.errors); // error message is sent back as a json with the error info
+    }
 
-        const post = {
-          title: req.body.title,
-          text: req.body.text,
-          maxComments: req.body.maxComments,
-          authorId: 1   // TODO: DELETE 1 WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
-                        // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
-        };
+    const post = {
+      title: req.body.title,
+      text: req.body.text,
+      maxComments: req.body.maxComments,
+      authorId: 1   // TODO: DELETE 1 WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
+      // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
+    };
 
-        try {
-            const createdPost = await postDao.createPost(post);
-            res.json(createdPost);
-        } catch (err) {
-            if (err.code === 'DUPLICATE_TITLE') {
-              res.status(409).json({ error: err.message });   // error: 409 Conflict
-            } else {
-              console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
-              res.status(503).json({ error: 'Database error during post creation.' });
-            }
-          }
+    try {
+      const createdPost = await postDao.createPost(post);   // TODO: pass 'req.user.id' as first parameter 
+      res.json(createdPost);
+    } catch (err) {
+      if (err.code === 'DUPLICATE_TITLE') {
+        res.status(409).json({ error: err.message });   // error: 409 Conflict (customly handled)
+      } else {
+        console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
+        res.status(503).json({ error: 'Database error during post creation.' });
       }
+    }
+  }
 );
+
+// 3. Delete an existing post, given its id.
+// DELETE /api/posts/<id>
+// Given a post id, this route deletes the associated post from the forum.
+app.delete('/api/posts/:id',
+  [ 
+    check('id').isInt({min: 1})   // check: the id must be a positive integer
+  ],
+  async (req, res) => {
+    try {
+      const numChanges = await postDao.deletePost(req.params.id);   // TODO: add 'req.user.id' as first parameter when calling deletePost()
+      if (numChanges === 0) {
+        res.status(404).json({ error: "Post not found or you're not authorized to delete it." });
+      } else {
+        res.status(200).end();  // deleted successfully, no content
+      }
+    } catch (err) {
+      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
+      res.status(503).json({ error: "Database error during post deletion." });
+    }
+});
 
 
 
@@ -147,6 +168,6 @@ const PORT = 3001;
 app.listen(PORT, (err) => {
   if (err)
     console.log(err);
-  else 
+  else
     console.log(`Server listening at http://localhost:${PORT}/`);
 });

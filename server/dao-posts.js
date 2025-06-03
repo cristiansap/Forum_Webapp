@@ -74,26 +74,41 @@ exports.getPostById = (id) => {
  * This function adds a new post in the database.
  * The post id is added automatically by the DB, and it is returned as this.lastID.
  */
-exports.createPost = (post) => {
-  return new Promise((resolve, reject) => {
-    const sql = `INSERT INTO POST (title, text, max_comments, user_ID)
-        VALUES (?, ?, ?, ?)`;
+exports.createPost = (post) => {    // TODO: pass 'authorId' as first parameter inside the getPostById()
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO POST (title, text, max_comments, user_ID)
+            VALUES (?, ?, ?, ?)`;
 
-    const params = [post.title, post.text, post.maxComments, post.authorId];
-
-    db.run(sql, params, function (err) {
-        if (err) {
-            if (err.message.includes("UNIQUE constraint failed: POST.title")) {     // custom error message
-                reject({ code: 'DUPLICATE_TITLE', message: 'A post with this title already exists.' });
+        const params = [post.title, post.text, post.maxComments, post.authorId];
+        db.run(sql, params, function (err) {
+            if (err) {
+                if (err.message.includes("UNIQUE constraint failed: POST.title")) {     // custom error message
+                    reject({ code: 'DUPLICATE_TITLE', message: 'A post with this title already exists.' });
+                } else {
+                    reject(err);
+                }
             } else {
-                reject(err);
+            // return the object just inserted, with the automatically assigned id
+            exports.getPostById(this.lastID)  // TODO: pass 'post.authorId' as first parameter inside the getPostById(), so I have also to modify accordingly the prototype of getPostById()
+                .then(post => resolve(post))
+                .catch(err => reject(err));
             }
-        } else {
-        // return the object just inserted, with the automatically assigned id
-        exports.getPostById(this.lastID)  // TODO: pass 'post.authorId' as first parameter inside the getPostById(), so I have also to modify accordingly the prototype of getPostById()
-            .then(post => resolve(post))
-            .catch(err => reject(err));
-      }
+        });
     });
-  });
+};
+
+/**
+ * This function deletes an existing post given its id.
+ */
+exports.deletePost = (postId) => {   // TODO: pass 'authorId' as first parameter inside the deletePost()
+    return new Promise((resolve, reject) => {
+        const sql = 'DELETE FROM POST WHERE id = ?';   // TODO: add 'AND user_ID = ?' at the end of the query
+        db.run(sql, [postId], function (err) {      // TODO: add authorId as optional parameter like this: [postId, authorId]
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes);  // return the number of deleted rows (0 if not authorized or not found)
+            }
+        });
+    });
 };

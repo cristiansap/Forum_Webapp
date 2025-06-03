@@ -20,7 +20,7 @@ Content-Type: application/json
 ###
 
 ## Delete a post (auth + owner or admin)
-DELETE http://localhost:3001/api/posts/4 HTTP/1.1
+DELETE http://localhost:3001/api/posts/9 HTTP/1.1
 ###
 
 
