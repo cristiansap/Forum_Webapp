@@ -102,7 +102,7 @@ function BodyLayout(props) {
         return (
             <div>
                 {samplePosts
-                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))      // TODO: remove the sorting because it is already handled by the server, and test if it works
                     .map(post => (
                         <PostCard key={post.id} post={post} comments={sampleComments} />
                     ))

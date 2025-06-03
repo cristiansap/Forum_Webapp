@@ -68,7 +68,7 @@ PUT http://localhost:3001/api/comments/4/interesting HTTP/1.1
 Content-type: application/json
 
 {
-    "id" : 3,     // post ID
+  "id" : 3,     // post ID
 }
 ###
 
@@ -77,8 +77,6 @@ PUT http://localhost:3001/api/comments/4/not-interesting HTTP/1.1
 Content-type: application/json
 
 {
-    "id" : 3,     // post ID
+  "id" : 3,     // post ID
 }
 ###
-
-## Retrieve the total number of "interesting" flags for a comment

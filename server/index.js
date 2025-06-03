@@ -7,8 +7,9 @@ const { check, validationResult } = require('express-validator');  // validation
 const cors = require('cors');
 
 
-// TODO: insert POST-DAO / COMMENT-DAO
-// TODO: insert USER-DAO
+const postDao = require('./dao-posts');         // module for accessing the posts in the DB
+const commentDao = require('./dao-comments');   // module for accessing the comments in the DB
+const userDao = require('./dao-users');         // module for accessing the users in the DB
 
 
 /* Init express and set-up the middlewares */
@@ -85,6 +86,21 @@ const errorFormatter = ({ location, msg, param, value, nestedErrors }) => {
 
 /*** APIs ***/
 
+
+// 1. Retrieve the list of all the available posts.
+// GET /api/posts
+// This route returns all the posts authored by the current user.
+app.get('/api/posts',
+  async (req, res) => {
+    try {
+      const posts = await postDao.listPosts();
+      res.json(posts);
+    } catch (err) {
+      console.log(err);   // Logging errors is useful while developing, to catch SQL errors etc.
+      res.status(500).json({ error: 'Database error while retrieving posts' });
+    }
+  }
+);
 
 
 
