@@ -87,9 +87,11 @@ const errorFormatter = ({ location, msg, param, value, nestedErrors }) => {
 /*** APIs ***/
 
 
+/** POSTS APIs **/
+
 // 1. Retrieve the list of all the available posts.
 // GET /api/posts
-// This route returns all the posts authored by the current user.
+// This route returns all the posts of the forum.
 app.get('/api/posts',
   async (req, res) => {
     try {
@@ -107,9 +109,9 @@ app.get('/api/posts',
 // This route adds a new post to the forum.
 app.post('/api/posts',
   [
-    check('title').isLength({ min: 1, max: 100 }),
-    check('text').isLength({ min: 1 }),
-    check('maxComments').optional({ checkFalsy: true }).isInt({ min: 1 })   // if present and not falsy (e.g. null, ""), must be an integer >= 1
+    check('title').isLength({ min: 1 }),    // TODO: should we set a max or not?
+    check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
+    check('maxComments').optional({ checkFalsy: true }).isInt({ min: 1 }).toInt()   // if present and not falsy (e.g. null, ""), maxComments must represent an integer >= 1, then it is parsed to Int
   ],
   async (req, res) => {
     const errors = validationResult(req).formatWith(errorFormatter);  // format error message
@@ -121,7 +123,7 @@ app.post('/api/posts',
       title: req.body.title,
       text: req.body.text,
       maxComments: req.body.maxComments,
-      authorId: 1   // TODO: DELETE 1 WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
+      authorId: 1   // TODO: DELETE 1 and WRITE 'req.user.id' WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
       // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
     };
 
@@ -144,15 +146,36 @@ app.post('/api/posts',
 // Given a post id, this route deletes the associated post from the forum.
 app.delete('/api/posts/:id',
   [ 
-    check('id').isInt({min: 1})   // check: the id must be a positive integer
+    check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
   ],
   async (req, res) => {
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty()) {
+      return res.status(422).json(errors.errors);
+    }
+
+    const postId = req.params.id;
+
     try {
+      const post = await postDao.getPostById(postId);
+
+      if (!post || post.error) {
+        return res.status(404).json({ error: "Post not found." });
+      }
+
+      // Only the owner or an admin are allowed to delete the post
+
+      /* TODO: uncomment this part once authentication has been implemented !!!
+      if (post.authorId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Not authorized to delete this post." });
+      }
+      */
+
       const numChanges = await postDao.deletePost(req.params.id);   // TODO: add 'req.user.id' as first parameter when calling deletePost()
       if (numChanges === 0) {
-        res.status(404).json({ error: "Post not found or you're not authorized to delete it." });
+        res.status(404).json({ error: "Post not deleted." });
       } else {
-        res.status(200).end();  // deleted successfully, no content
+        res.status(204).end();  // deleted successfully, no content
       }
     } catch (err) {
       console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
@@ -160,6 +183,150 @@ app.delete('/api/posts/:id',
     }
 });
 
+
+/*** COMMENTS APIs ***/
+
+// 4. Retrieve the list of all comments associated with a specific post, given its id.
+// GET /api/posts/<id>/comments
+// Given a post id, this route retrieves all associated comments.
+app.get('/api/posts/:id/comments',
+  [
+    check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
+  ],
+  async (req, res) => {
+    try {
+      const comments = await commentDao.getCommentsForPost(req.params.id);   // TODO: add 'req.user.id' as first parameter of getCommentsForPost()
+      res.json(comments);
+    } catch (err) {
+      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
+      res.status(503).json({ error: 'Database error while retrieving comments.' });
+    }
+  }
+);
+
+// 5. Create a new comment related to a specific post, by providing all relevant information.
+// POST /api/posts/<id>/comments
+// This route adds a new comment to a specific post of the forum.
+app.post('/api/posts/:id/comments', 
+  [
+    check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
+    check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
+  ],
+  
+  async (req, res) => {
+
+    const errors = validationResult(req).formatWith(errorFormatter);  // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json(errors.errors); // error message is sent back as a json with the error info
+    }
+
+    const comment = {
+      text: req.body.text,
+      authorId: 1   // TODO: DELETE 1 and WRITE 'req.user.id' WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
+      // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
+    };
+
+    try {
+      const addedComment = await commentDao.addCommentToPost(comment, req.params.id);  // TODO: pass 'req.user.id' as first parameter 
+      res.json(addedComment);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Database error while adding comment.' });
+    }
+});
+
+// 6. Update an existing comment, by providing the new text.
+// PUT /api/comments/<id>
+// This route allows to modify a comment, specifiying its id and the new text.
+app.put('/api/comments/:id',
+  [
+    check('id').isInt({ min: 1 }).toInt(),    // check: the id must represent a positive integer, then it is parsed to Int
+    check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
+  ],
+
+  async (req, res) => {
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty()) {
+      return res.status(422).json(errors.errors);   // error message is sent back as a json with the error info
+    }
+
+    const commentId = Number(req.params.id);
+    // Is the id in the body present? If yes, is it equal to the id in the url?
+    if (req.body.id && req.body.id !== commentId) {
+      return res.status(422).json({ error: 'URL and body id mismatch' });
+    }
+
+    try {
+      const oldComment = await commentDao.getCommentById(commentId);
+      if (!oldComment || oldComment.error) {
+        return res.status(404).json({ error: 'Comment not found.' });
+      }
+
+      /* TODO: uncomment this 'if statement' once authN is implemented !!!
+      if (oldComment.authorId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'You are not authorized to edit this comment.' });
+      }
+      */
+
+      const updatedComment = {
+        text: req.body.text,
+      };
+
+      const result = await commentDao.updateComment(commentId, updatedComment);
+      if (result.error)
+        res.status(404).json(result);
+      else
+        res.json(result);
+
+    } catch (err) {
+      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
+      res.status(503).json({ error: 'Database error while updating comment.' });
+    }
+  }
+);
+
+// 7. Delete an existing comment, given its id.
+// DELETE /api/comments/<id>
+// Given a comment id, this route deletes the associated comment from the forum.
+app.delete('/api/comments/:id',
+  [ 
+    check('id').isInt({ min: 1 }).toInt()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty()) {
+      return res.status(422).json(errors.errors);
+    }
+
+    const commentId = req.params.id;
+
+    try {
+      const comment = await commentDao.getCommentById(commentId);
+
+      if (!comment || comment.error) {
+        return res.status(404).json({ error: "Comment not found." });
+      }
+
+      // Only the owner or an admin are allowed to delete the comment
+
+      /* TODO: uncomment this part once authentication has been implemented !!!
+      if (comment.authorId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Not authorized to delete this comment." });
+      }
+      */
+
+      const numChanges = await commentDao.deleteComment(commentId);
+      if (numChanges === 0) {
+        res.status(404).json({ error: "Comment not deleted." });
+      } else {
+        res.status(204).end();  // deleted successfully, no content
+      }
+    } catch (err) {
+      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
+      res.status(503).json({ error: "Database error during comment deletion." });
+    }
+  }
+);
 
 
 

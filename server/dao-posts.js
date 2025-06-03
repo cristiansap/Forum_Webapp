@@ -20,18 +20,17 @@ function convertPostFromDbRecord(record) {
   };
 }
 
-
 /**
  * This function retrieves the list of all posts, with aggregated number of comments.
  */
 exports.listPosts = () => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT p.id, p.title, p.text, p.timestamp, p.max_comments AS maxComments, u.name AS authorName, u.id AS authorId, COUNT(c.id) AS commentCount
-            FROM POST p
-                LEFT JOIN USER u ON p.user_ID = u.id
-                LEFT JOIN COMMENT c ON c.post_ID = p.id
-            GROUP BY p.id
-            ORDER BY p.timestamp DESC`;
+                    FROM POST p
+                    LEFT JOIN USER u ON p.user_ID = u.id
+                    LEFT JOIN COMMENT c ON c.post_ID = p.id
+                    GROUP BY p.id
+                    ORDER BY p.timestamp DESC`;
 
         db.all(sql, [], (err, rows) => {
             if (err) {
@@ -50,10 +49,11 @@ exports.listPosts = () => {
 exports.getPostById = (id) => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT p.id, p.title, p.text, p.timestamp, p.max_comments AS maxComments, u.name AS authorName, u.id AS authorId, COUNT(c.id) AS commentCount
-            FROM POST p
-                LEFT JOIN USER u ON p.user_ID = u.id
-                LEFT JOIN COMMENT c ON c.post_ID = p.id
-            WHERE p.id = ?`;
+                    FROM POST p
+                    LEFT JOIN USER u ON p.user_ID = u.id
+                    LEFT JOIN COMMENT c ON c.post_ID = p.id
+                    WHERE p.id = ?
+                    GROUP BY p.id`;
 
         db.get(sql, [id], (err, row) => {
             if (err) {
@@ -74,10 +74,10 @@ exports.getPostById = (id) => {
  * This function adds a new post in the database.
  * The post id is added automatically by the DB, and it is returned as this.lastID.
  */
-exports.createPost = (post) => {    // TODO: pass 'authorId' as first parameter inside the getPostById()
+exports.createPost = (post) => {
     return new Promise((resolve, reject) => {
         const sql = `INSERT INTO POST (title, text, max_comments, user_ID)
-            VALUES (?, ?, ?, ?)`;
+                    VALUES (?, ?, ?, ?)`;
 
         const params = [post.title, post.text, post.maxComments, post.authorId];
         db.run(sql, params, function (err) {
@@ -88,8 +88,8 @@ exports.createPost = (post) => {    // TODO: pass 'authorId' as first parameter 
                     reject(err);
                 }
             } else {
-            // return the object just inserted, with the automatically assigned id
-            exports.getPostById(this.lastID)  // TODO: pass 'post.authorId' as first parameter inside the getPostById(), so I have also to modify accordingly the prototype of getPostById()
+            // return the object just inserted, with the automatically assigned id and timestamp
+            exports.getPostById(this.lastID)
                 .then(post => resolve(post))
                 .catch(err => reject(err));
             }
@@ -100,10 +100,10 @@ exports.createPost = (post) => {    // TODO: pass 'authorId' as first parameter 
 /**
  * This function deletes an existing post given its id.
  */
-exports.deletePost = (postId) => {   // TODO: pass 'authorId' as first parameter inside the deletePost()
+exports.deletePost = (postId) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM POST WHERE id = ?';   // TODO: add 'AND user_ID = ?' at the end of the query
-        db.run(sql, [postId], function (err) {      // TODO: add authorId as optional parameter like this: [postId, authorId]
+        const sql = 'DELETE FROM POST WHERE id = ?';    // there is no need for checking 'user_ID = ?', because I've already checked the author in app.delete('/api/posts/:id') inside index.js
+        db.run(sql, [postId], function (err) {
             if (err) {
                 reject(err);
             } else {

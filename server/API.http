@@ -20,18 +20,14 @@ Content-Type: application/json
 ###
 
 ## Delete a post (auth + owner or admin)
-DELETE http://localhost:3001/api/posts/9 HTTP/1.1
+DELETE http://localhost:3001/api/posts/13 HTTP/1.1
 ###
 
 
 ####  COMMENTS APIs  ####
 
 ## Retrieve comments for a specific post
-GET http://localhost:3001/api/posts/3/comments HTTP/1.1
-###
-
-## Retrieve a single comment by ID
-GET http://localhost:3001/api/comments/4 HTTP/1.1
+GET http://localhost:3001/api/posts/4/comments HTTP/1.1
 ###
 
 ## Add a comment to a post (auth optional: anonymous allowed)
@@ -39,7 +35,7 @@ POST http://localhost:3001/api/posts/3/comments HTTP/1.1
 Content-Type: application/json
 
 {
-  "text": "A simple comment for testing APIs"
+  "text": "Another longer comment related to post 3 for testing APIs"
 }
 ###
 
@@ -48,12 +44,12 @@ PUT http://localhost:3001/api/comments/5 HTTP/1.1
 Content-Type: application/json
 
 {
-  "text": "Edited comment for testing APIs"
+  "text": "Updated comment for testing APIs"
 }
 ###
 
 ## Delete a comment (auth + owner or admin)
-DELETE http://localhost:3001/api/comments/5 HTTP/1.1
+DELETE http://localhost:3001/api/comments/22 HTTP/1.1
 ###
 
 

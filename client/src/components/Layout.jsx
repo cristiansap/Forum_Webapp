@@ -54,7 +54,7 @@ function BodyLayout(props) {
             id: 1,
             title: 'Welcome to Royal Forum!',
             author: 'king Mark',
-            timestamp: '2025-06-01 14:15:00',
+            timestamp: '2025-06-02T16:19:00.000Z',
             text: 'This is our first official post! \nThis is the Royal Forum: where a lot of discussions are available and new people may help you to discover something curious!',
             commentCount: 4,   // NOTE: THIS INFORMATION WILL NOT BE AVAILABLE DIRECTLY, IT WILL BE RETRIEVED WITH A PROPER SQL QUERY
             maxComments: 10
@@ -63,7 +63,7 @@ function BodyLayout(props) {
             id: 2,
             title: 'Rules of the Forum',
             author: 'queen Lady',
-            timestamp: '2025-06-01 16:30:00',
+            timestamp: '2025-06-02T16:20:00.000Z',
             text: 'Please be respectful and kind to others.',
             commentCount: 4,
             maxComments: null
@@ -74,25 +74,25 @@ function BodyLayout(props) {
         {
             text: "Great post!",
             authorName: "Luigi",
-            timestamp: "2025-06-01 10:40:01",
+            timestamp: "2025-06-02T15:00:00.000Z",
             interesting: true,
         },
         {
             text: "I disagree.",
             authorName: null,  // anonymous
-            timestamp: "2025-06-01 10:45:12",
+            timestamp: "2025-06-02T15:05:00.000Z",
             interesting: false,
         },
         {
             text: "Very informative, thank you!",
             authorName: "Peach",
-            timestamp: "2025-06-01 11:00:00",
+            timestamp: "2025-06-02T15:10:00.000Z",
             interesting: true,
         },
         {
             text: "Can you provide more details?",
             authorName: "Toad",
-            timestamp: "2025-06-01 11:05:25",
+            timestamp: "2025-06-02T14:30:00.000Z",
             interesting: false,
         }
     ];
@@ -102,7 +102,7 @@ function BodyLayout(props) {
         return (
             <div>
                 {samplePosts
-                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))      // TODO: remove the sorting because it is already handled by the server, and test if it works
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))      // TODO: remove the sorting because it is already handled by the server, and test if it works (check if it works also for comments)
                     .map(post => (
                         <PostCard key={post.id} post={post} comments={sampleComments} />
                     ))

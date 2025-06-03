@@ -23,7 +23,7 @@ function CommentsCollapse(props) {
                 <div className="flex-grow-1">   {/* "flex-grow-1" ensure that the block occupies the central space */}
                   <p style={{ whiteSpace: 'pre-line', margin: 0 }}>{comment.text}</p>   {/* "whitespace-pre-line" serves to keep '\n' characters and to collapse any multiple spaces */}
                   <small className="text-muted">
-                    &mdash; {comment.authorName || 'anonymous'} [{comment.timestamp}]
+                    &mdash; {comment.authorName || 'anonymous'} [{comment.timestamp.replace('T', ' ').slice(0, 19)}]
                   </small>
                 </div>
 
@@ -62,7 +62,7 @@ function PostCard(props) {
           <Card.Title className="mb-0" style={{ whiteSpace: 'pre-line' }}>  {/* "whitespace-pre-line" serves to keep '\n' characters and to collapse any multiple spaces */}
             {props.post.title}
           </Card.Title>
-          <small className="text-muted">{props.post.timestamp}</small>
+          <small className="text-muted">{props.post.timestamp.replace('T', ' ').slice(0, 19)}</small>
         </div>
         <Card.Subtitle className="mb-2 text-muted">by {props.post.author}</Card.Subtitle>
 
