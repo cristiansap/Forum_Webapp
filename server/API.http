@@ -8,10 +8,6 @@
 GET http://localhost:3001/api/posts HTTP/1.1
 ###
 
-## Retrieve a single post by ID
-GET http://localhost:3001/api/posts/4 HTTP/1.1
-###
-
 ## Create a new post (auth required)
 POST http://localhost:3001/api/posts HTTP/1.1
 Content-Type: application/json
@@ -19,7 +15,7 @@ Content-Type: application/json
 {
   "title": "This is an amazing post!",
   "text": "This is an example of post for testing APIs",
-  "max_comments": 5
+  "maxComments": 5
 }
 ###
 

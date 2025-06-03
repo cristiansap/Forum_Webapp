@@ -59,7 +59,7 @@ passport.deserializeUser(function (user, callback) {
 const session = require('express-session');
 
 app.use(session({
-  secret: "ee94825a321dba2723d6d4fad1dbd96b17c1a348",     // SHA-1("This is the secret for the Forum Exam from the web application course")
+  secret: "87d99e23e0e459e26a43f7ad02df5c5c5694c747",     // secret = SHA-1("I am the student Cristian Sapia and this is the secret for the Forum Exam from the web application course")
   resave: false,
   saveUninitialized: false,
   cookie: { httpOnly: true, secure: false },    // httpOnly: true (the cookie will be inaccessible to JavaScript code running in the browser)
@@ -100,6 +100,43 @@ app.get('/api/posts',
       res.status(500).json({ error: 'Database error while retrieving posts' });
     }
   }
+);
+
+// 2. Create a new post, by providing all relevant information.
+// POST /api/posts
+// This route adds a new post to the forum.
+app.post('/api/posts',
+    [
+      check('title').isLength({ min: 1, max: 100 }),
+      check('text').isLength({ min: 1 }),
+      check('maxComments').optional({ checkFalsy: true }).isInt({ min: 1 })   // if present and not falsy (e.g. null, ""), must be an integer >= 1
+    ],
+    async (req, res) => {
+        const errors = validationResult(req).formatWith(errorFormatter);  // format error message
+        if (!errors.isEmpty()) {
+            return res.status(422).json(errors.errors); // error message is sent back as a json with the error info
+        }
+
+        const post = {
+          title: req.body.title,
+          text: req.body.text,
+          maxComments: req.body.maxComments,
+          authorId: 1   // TODO: DELETE 1 WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
+                        // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
+        };
+
+        try {
+            const createdPost = await postDao.createPost(post);
+            res.json(createdPost);
+        } catch (err) {
+            if (err.code === 'DUPLICATE_TITLE') {
+              res.status(409).json({ error: err.message });   // error: 409 Conflict
+            } else {
+              console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
+              res.status(503).json({ error: 'Database error during post creation.' });
+            }
+          }
+      }
 );
 
 
