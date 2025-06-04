@@ -55,20 +55,11 @@ DELETE http://localhost:3001/api/comments/22 HTTP/1.1
 
 ####  "INTERESTING" APIs  ####
 
-## Mark a comment as interesting (auth required)
-PUT http://localhost:3001/api/comments/4/interesting HTTP/1.1
+## Mark/unmark a comment as interesting (auth required)
+PUT http://localhost:3001/api/comments/2/interesting HTTP/1.1
 Content-type: application/json
 
 {
-  "id" : 3,     // post ID
-}
-###
-
-## Unmark a comment as interesting (auth required)
-PUT http://localhost:3001/api/comments/4/not-interesting HTTP/1.1
-Content-type: application/json
-
-{
-  "id" : 3,     // post ID
+  "interesting": true
 }
 ###

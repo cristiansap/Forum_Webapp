@@ -251,10 +251,6 @@ app.put('/api/comments/:id',
     }
 
     const commentId = Number(req.params.id);
-    // Is the id in the body present? If yes, is it equal to the id in the url?
-    if (req.body.id && req.body.id !== commentId) {
-      return res.status(422).json({ error: 'URL and body id mismatch' });
-    }
 
     try {
       const oldComment = await commentDao.getCommentById(commentId);
@@ -324,6 +320,42 @@ app.delete('/api/comments/:id',
     } catch (err) {
       console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(503).json({ error: "Database error during comment deletion." });
+    }
+  }
+);
+
+// 7. Mark / unmark an existing comment as interesting / not interesting, given its id.
+// PUT /api/comments/<id>/interesting
+// Given a comment id, this route modifies the associated interesting flag.
+app.put('/api/comments/:id/interesting',
+  [
+    check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
+    check('interesting').isBoolean()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty())
+      return res.status(422).json(errors.errors);
+
+    const commentId = req.params.id;
+    const interesting = req.body.interesting;
+    const userId = 1;   // TODO: DELETE 1 and WRITE 'req.user.id' WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
+      // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
+
+    try {
+      const comment = await commentDao.getCommentById(commentId);   // Server-side check: commentId must exist.
+      if (comment.error)
+        return res.status(404).json({ error: 'Comment not found.' });
+
+      const result = interesting ? await commentDao.markCommentAsInteresting(userId, commentId)
+                                : await commentDao.unmarkCommentAsInteresting(userId, commentId);
+      if (result.error)
+        res.status(400).json(result);
+      else
+        res.status(200).end();
+    } catch (err) {
+      console.error(err);
+      res.status(503).json({ error: 'Database error while updating interesting flag for a comment.' });
     }
   }
 );

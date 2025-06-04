@@ -140,7 +140,6 @@ exports.updateComment = (commentId, comment) => {
     });
 };
 
-
 /**
  * This function deletes an existing comment given its id.
  */
@@ -157,3 +156,38 @@ exports.deleteComment = (id) => {
     });
 };
 
+/**
+ * This function marks an existing comment (given its id) as "interesting" for a specific user.
+ * In particular, this function adds a new entry in the INTERESTING table of the database.
+ */
+exports.markCommentAsInteresting = (userId, commentId) => {
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT OR IGNORE INTO INTERESTING(user_ID, comment_ID)
+                    VALUES (?, ?)`;     // "INSERT OR IGNORE" is specified to avoid inserting duplicates if the comment is already marked as interesting by the current user.
+                                        // This should be impossible to happen, unless some bug or malformed request occurs, so to be safe it is included.
+        db.run(sql, [userId, commentId], function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes);
+            }
+        });
+    });
+};
+
+/**
+ * This function unmarks an existing comment (given its id) as "interesting" for a specific user.
+ * In particular, this function deletes an existing entry from the INTERESTING table of the database.
+ */
+exports.unmarkCommentAsInteresting = (userId, commentId) => {
+    return new Promise((resolve, reject) => {
+        const sql = `DELETE FROM INTERESTING WHERE user_ID = ? AND comment_ID = ?`;
+        db.run(sql, [userId, commentId], function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes);
+            }
+        });
+    });
+};
