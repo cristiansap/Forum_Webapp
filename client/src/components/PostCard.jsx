@@ -62,7 +62,8 @@ function CommentsCollapse(props) {
 function PostCard(props) {
 
   const [showComments, setShowComments] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);   // TODO: this MUST be removed AFTER implementing authN !!!!
+
+  const filteredComments = props.comments.filter(c => c.postId === props.post.id);
 
   return (
     <Card className="mb-4 mx-auto" style={{ maxWidth: '700px' }}>
@@ -77,7 +78,6 @@ function PostCard(props) {
 
         {/* Text of the post */}
         <Card.Text className="multiline-text">{formatTextWithNewlines(props.post.text)}</Card.Text>
-        {console.log('Text content:', props.post.text)}
 
         {/* Comment count info */}
         <div className="mb-2 text-muted">
@@ -85,39 +85,30 @@ function PostCard(props) {
           Actual comments: {props.post.commentCount}
         </div>
 
-        {isAuthenticated ? (
-          <>
-            <div className="d-flex gap-2">
-              <Button size="sm"
-                onClick={() => setShowComments(!showComments)}
-                className={showComments ? 'main-color hide-comments-button' : 'main-color show-comments-button'}>
-                <i className={`bi ${showComments ? 'bi-caret-up-square-fill' : 'bi-caret-down-square-fill'} me-1`} />
-                {showComments ? 'Hide Comments' : 'Show Comments'}
-              </Button>
-
-              <Link to={'add-comment'} >
-                <Button size="sm" className="add-comment-button">
-                  <i className="bi bi-chat-square-text-fill me-1"></i>
-                  Add Comment
-                </Button>
-              </Link>
-
-              <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
-                  onClick={() => console.log("POST DELETED")}>
-                <i className="bi bi-trash-fill me-1" />
-                Delete Post
-              </Button>
-            </div>
-
-            <CommentsCollapse comments={props.comments} showComments={showComments} />
-            
-          </>
-        ) : (
-          <Button className="main-color" size="sm" disabled>
-            <i className="bi bi-lock-fill me-1" />
-            Login to view comments
+        <div className="d-flex gap-2">
+          <Button size="sm"
+            onClick={() => setShowComments(!showComments)}
+            className={showComments ? 'main-color hide-comments-button' : 'main-color show-comments-button'}>
+            <i className={`bi ${showComments ? 'bi-caret-up-square-fill' : 'bi-caret-down-square-fill'} me-1`} />
+            {showComments ? 'Hide Comments' : 'Show Comments'}
           </Button>
-        )}
+
+          <Link to={'add-comment'} >
+            <Button size="sm" className="add-comment-button">
+              <i className="bi bi-chat-square-text-fill me-1"></i>
+              Add Comment
+            </Button>
+          </Link>
+
+          <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
+              onClick={() => console.log("POST DELETED")}>
+            <i className="bi bi-trash-fill me-1" />
+            Delete Post
+          </Button>
+        </div>
+
+        <CommentsCollapse comments={filteredComments} showComments={showComments} />
+            
       </Card.Body>
     </Card>
   );

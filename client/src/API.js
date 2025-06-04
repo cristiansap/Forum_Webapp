@@ -91,6 +91,7 @@ const getCommentsForPost = async (postId) => {
         authorName: comment.authorName,
         authorId: comment.authorId,
         timestamp: dayjs(comment.timestamp),
+        postId: postId,
         isInterestingForCurrentUser: comment.isInterestingForCurrentUser,
         countInterestingMarks: comment.countInterestingMarks
       };

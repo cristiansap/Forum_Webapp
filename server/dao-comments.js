@@ -9,10 +9,10 @@ function convertCommentFromDbRecord(record) {
   return {
     id: record.id,
     text: record.text,
-    timestamp: dayjs(record.timestamp),
-    postId: record.postId,
     authorName: record.authorName,
     authorId: record.authorId,
+    timestamp: dayjs(record.timestamp),
+    postId: record.postId,
     isInterestingForCurrentUser: !!record.isInterestingForCurrentUser,  // cast to boolean (0 -> false ; 1 -> true)
     countInterestingMarks: record.countInterestingMarks,
   };
