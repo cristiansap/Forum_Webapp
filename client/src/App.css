@@ -7,13 +7,13 @@
   background-color: #3a60d3;
 }
 
-.show-comments-button {
+.show-comments-button, .submit-post-button, .submit-comment-button {
   background-color: white;
   color: #4169E1;
   border-color: #385cc5;
 }
 
-.show-comments-button:hover {
+.show-comments-button:hover, .submit-post-button:hover, .submit-comment-button:hover {
   background-color: #4169E1;
   color: white;
   border-color: #4169E1;
@@ -106,6 +106,6 @@
 }
 
 /* Correctly handle '\n' characters in post and comment text */
-.multiline-title {
-  white-space: pre-line !important;   /* enable '\n' */
+.multiline-text {
+  white-space: pre-line !important;   /* tell the browser to respect newline characters (otherwise ignored) */
 }

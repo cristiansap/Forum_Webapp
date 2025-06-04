@@ -15,12 +15,12 @@ Content-Type: application/json
 {
   "title": "This is an amazing post!",
   "text": "This is an example of post for testing APIs",
-  "maxComments": 5
+  "maxComments": ""
 }
 ###
 
 ## Delete a post (auth + owner or admin)
-DELETE http://localhost:3001/api/posts/13 HTTP/1.1
+DELETE http://localhost:3001/api/posts/15 HTTP/1.1
 ###
 
 

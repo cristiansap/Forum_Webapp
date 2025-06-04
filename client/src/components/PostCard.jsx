@@ -1,6 +1,13 @@
 import { Card, Button, Collapse, ListGroup, Row, Col } from 'react-bootstrap';
+import { Outlet, Link, useParams, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
+
+function formatTextWithNewlines(text) {
+  if (!text)
+    return '';
+  return text.replace(/\\n/g, '\n');    // convert literal strings '\n' to real newline characters
+}
 
 function CommentsCollapse(props) {
 
@@ -21,18 +28,20 @@ function CommentsCollapse(props) {
 
                 {/* Comment text + author */}
                 <div className="flex-grow-1">   {/* "flex-grow-1" ensure that the block occupies the central space */}
-                  <p style={{ whiteSpace: 'pre-line', margin: 0 }}>{comment.text}</p>   {/* "whitespace-pre-line" serves to keep '\n' characters and to collapse any multiple spaces */}
+                  <p className="m-0 multiline-text">{formatTextWithNewlines(comment.text)}</p>
                   <small className="text-muted">
-                    &mdash; {comment.authorName || 'anonymous'} [{comment.timestamp.replace('T', ' ').slice(0, 19)}]
+                    &mdash; {comment.authorName || 'anonymous'} [{(comment.timestamp).format('YYYY-MM-DD HH:mm:ss')}]
                   </small>
                 </div>
 
                 {/* Right-aligned buttons */}
                 <div className="ms-2">
-                  <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
-                    onClick={() => console.log("Comment edited")} >
-                    <i className="bi bi-pencil-fill" />
-                  </Button>
+                  <Link to={`/edit-comment/${comment.id}`} >
+                    <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
+                      onClick={() => console.log(`Comment with id ${comment.id} edited`)} >
+                      <i className="bi bi-pencil-fill" />
+                    </Button>
+                  </Link>
 
                   <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
                     onClick={() => console.log("Comment deleted")} >
@@ -52,22 +61,23 @@ function CommentsCollapse(props) {
 
 function PostCard(props) {
 
-  const [showComments, setShowComments] = useState(true);
+  const [showComments, setShowComments] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);   // TODO: this MUST be removed AFTER implementing authN !!!!
 
   return (
-    <Card className="mb-4 mx-auto multiline-title" style={{ maxWidth: '700px' }}>
+    <Card className="mb-4 mx-auto" style={{ maxWidth: '700px' }}>
       <Card.Body>
         <div className="d-flex justify-content-between align-items-center mb-2">
-          <Card.Title className="mb-0" style={{ whiteSpace: 'pre-line' }}>  {/* "whitespace-pre-line" serves to keep '\n' characters and to collapse any multiple spaces */}
+          <Card.Title className="mb-0">
             {props.post.title}
           </Card.Title>
-          <small className="text-muted">{props.post.timestamp.replace('T', ' ').slice(0, 19)}</small>
+          <small className="text-muted">{(props.post.timestamp).format('YYYY-MM-DD HH:mm:ss')}</small>
         </div>
-        <Card.Subtitle className="mb-2 text-muted">by {props.post.author}</Card.Subtitle>
+        <Card.Subtitle className="mb-2 text-muted">by {props.post.authorName}</Card.Subtitle>
 
         {/* Text of the post */}
-        <Card.Text>{props.post.text}</Card.Text>
+        <Card.Text className="multiline-text">{formatTextWithNewlines(props.post.text)}</Card.Text>
+        {console.log('Text content:', props.post.text)}
 
         {/* Comment count info */}
         <div className="mb-2 text-muted">
@@ -85,10 +95,12 @@ function PostCard(props) {
                 {showComments ? 'Hide Comments' : 'Show Comments'}
               </Button>
 
-              <Button size="sm" className="add-comment-button">
-                <i className="bi bi-chat-square-text-fill me-1"></i>
-                Add Comment
-              </Button>
+              <Link to={'add-comment'} >
+                <Button size="sm" className="add-comment-button">
+                  <i className="bi bi-chat-square-text-fill me-1"></i>
+                  Add Comment
+                </Button>
+              </Link>
 
               <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
                   onClick={() => console.log("POST DELETED")}>

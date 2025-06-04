@@ -25,7 +25,7 @@ exports.getCommentsForPost = (postId) => {      // TODO: add authorId as first p
     return new Promise((resolve, reject) => {
         /* TODO: uncomment this part when authN has been implemented
         if (authorId) {
-            // The user is authenticated -> include the info about whether interesting flag has been marked or not
+            // Authenticated user -> include the info about whether interesting flag has been marked or not
             const sql = `SELECT c.id, c.text, c.timestamp, u.id AS authorId, u.name AS authorName,
                         COUNT(i.user_ID) AS countInterestingMarks,
                         EXISTS (
@@ -34,8 +34,8 @@ exports.getCommentsForPost = (postId) => {      // TODO: add authorId as first p
                             WHERE i2.comment_ID = c.id AND i2.user_ID = ?
                         ) AS isInterestingForCurrentUser
                         FROM COMMENT c
-                            LEFT JOIN USER u ON c.user_ID = u.id
-                            LEFT JOIN INTERESTING i ON i.comment_ID = c.id
+                        LEFT JOIN USER u ON c.user_ID = u.id
+                        LEFT JOIN INTERESTING i ON i.comment_ID = c.id
                         WHERE c.post_ID = ?
                         GROUP BY c.id
                         ORDER BY c.timestamp DESC`;
@@ -43,12 +43,13 @@ exports.getCommentsForPost = (postId) => {      // TODO: add authorId as first p
         }
         */
        /* TODO: then add an 'else' statement to enbody the query and params assignment below !!! */
+       // Anonymous user -> retrieve only anonymous comments (user_ID IS NULL)
        const sql = `SELECT c.id, c.text, c.timestamp, u.id AS authorId, u.name AS authorName,
                     COUNT(i.user_ID) AS countInterestingMarks, FALSE AS isInterestingForCurrentUser
                     FROM COMMENT c
                     LEFT JOIN USER u ON c.user_ID = u.id
                     LEFT JOIN INTERESTING i ON i.comment_ID = c.id
-                    WHERE c.post_ID = ?
+                    WHERE c.post_ID = ? AND c.user_ID IS NULL
                     GROUP BY c.id
                     ORDER BY c.timestamp DESC`;
         const params = [postId];

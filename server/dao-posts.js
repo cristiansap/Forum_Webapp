@@ -4,9 +4,9 @@
 /* Data Access Object (DAO) module for accessing forum posts data */
 
 const db = require('./db');
-const dayjs = require('dayjs');
 
 // Convert a DB record into JSON object in API format (from snake_case to camelCase)
+// Note that JSON object requires camelCase as per the API specifications we defined.
 function convertPostFromDbRecord(record) {
   return {
     id: record.id,
@@ -14,7 +14,7 @@ function convertPostFromDbRecord(record) {
     text: record.text,
     authorName: record.authorName,  // obtained through JOIN with USER table
     authorId: record.authorId,    // obtained through JOIN with USER table
-    timestamp: dayjs(record.timestamp),
+    timestamp: record.timestamp,
     maxComments: record.maxComments,
     commentCount: record.commentCount  // obtained through a subquery (this is not directly available info)
   };
@@ -75,6 +75,10 @@ exports.getPostById = (id) => {
  * The post id is added automatically by the DB, and it is returned as this.lastID.
  */
 exports.createPost = (post) => {
+    // The database is configured to have a NULL value for posts without the 'max_comments' column set
+    if (post.maxComments === '' || post.maxComments === undefined)
+        post.maxComments = null;
+
     return new Promise((resolve, reject) => {
         const sql = `INSERT INTO POST (title, text, max_comments, user_ID)
                     VALUES (?, ?, ?, ?)`;

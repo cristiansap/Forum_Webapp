@@ -107,11 +107,11 @@ app.get('/api/posts',
 // 2. Create a new post, by providing all relevant information.
 // POST /api/posts
 // This route adds a new post to the forum.
-app.post('/api/posts',
+app.post('/api/posts',    // TODO: include the middleware isLoggedIn
   [
     check('title').isLength({ min: 1 }),    // TODO: should we set a max or not?
     check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
-    check('maxComments').optional({ checkFalsy: true }).isInt({ min: 1 }).toInt()   // if present and not falsy (e.g. null, ""), maxComments must represent an integer >= 1, then it is parsed to Int
+    check('maxComments').optional({ checkFalsy: true }).isInt({ min: 0 }).toInt()   // check if present and not falsy (e.g. null, ""), and maxComments must represent an integer >= 0, then it is parsed to Int
   ],
   async (req, res) => {
     const errors = validationResult(req).formatWith(errorFormatter);  // format error message
@@ -144,7 +144,7 @@ app.post('/api/posts',
 // 3. Delete an existing post, given its id.
 // DELETE /api/posts/<id>
 // Given a post id, this route deletes the associated post from the forum.
-app.delete('/api/posts/:id',
+app.delete('/api/posts/:id',        // TODO: include the middleware isLoggedIn
   [ 
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
   ],
@@ -238,7 +238,7 @@ app.post('/api/posts/:id/comments',
 // 6. Update an existing comment, by providing the new text.
 // PUT /api/comments/<id>
 // This route allows to modify a comment, specifiying its id and the new text.
-app.put('/api/comments/:id',
+app.put('/api/comments/:id',      // TODO: include the middleware isLoggedIn
   [
     check('id').isInt({ min: 1 }).toInt(),    // check: the id must represent a positive integer, then it is parsed to Int
     check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
@@ -284,7 +284,7 @@ app.put('/api/comments/:id',
 // 7. Delete an existing comment, given its id.
 // DELETE /api/comments/<id>
 // Given a comment id, this route deletes the associated comment from the forum.
-app.delete('/api/comments/:id',
+app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
   [ 
     check('id').isInt({ min: 1 }).toInt()
   ],
@@ -324,10 +324,10 @@ app.delete('/api/comments/:id',
   }
 );
 
-// 7. Mark / unmark an existing comment as interesting / not interesting, given its id.
+// 8. Mark / unmark an existing comment as interesting / not interesting, given its id.
 // PUT /api/comments/<id>/interesting
 // Given a comment id, this route modifies the associated interesting flag.
-app.put('/api/comments/:id/interesting',
+app.put('/api/comments/:id/interesting',    // TODO: include the middleware isLoggedIn
   [
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
     check('interesting').isBoolean()
