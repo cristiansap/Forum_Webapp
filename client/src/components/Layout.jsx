@@ -50,16 +50,12 @@ function BodyLayout(props) {
 
     useEffect(() => {
         if (props.dirty) {
-            API.getPosts().then(posts => {
+            API.getPosts()
+            .then(posts => {
                 props.setPostList(posts);
-                return Promise.all(posts.map(p => API.getCommentsForPost(p.id)));
-            }).then(commentArrays => {
-                // Merge all comments into one array
-                props.setCommentList(commentArrays.flat());
                 props.setDirty(false);
-            }).catch(err => {
-                console.log(err);
-            });
+            })
+            .catch(err => {console.log(err);});
         }
     }, [props.dirty]);
 
@@ -70,7 +66,7 @@ function BodyLayout(props) {
                 {props.posts
                     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))      // TODO: remove the sorting because it is already handled by the server, and test if it works (check if it works also for comments)
                     .map(post => (
-                        <PostCard key={post.id} post={post} comments={props.comments} />
+                        <PostCard key={post.id} post={post} />
                     ))
                 }
             </div>
@@ -171,4 +167,4 @@ function EditCommentLayout(props) {
     );
 }
 
-export { NotFoundLayout, LoginLayout, GenericLayout, BodyLayout , AddPostLayout, AddCommentLayout, EditCommentLayout};
+export { NotFoundLayout, LoginLayout, GenericLayout, BodyLayout , AddPostLayout, AddCommentLayout, EditCommentLayout };

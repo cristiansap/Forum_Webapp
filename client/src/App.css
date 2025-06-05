@@ -76,7 +76,7 @@
 }
 
 .tooltip-text {
-  visibility: hidden;  /* Tooltip hidden by default */
+  visibility: hidden;  /* tooltip hidden by default */
   background-color: #333;
   color: #fff;
   text-align: center;
