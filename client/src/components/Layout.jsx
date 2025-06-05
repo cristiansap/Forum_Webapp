@@ -48,25 +48,13 @@ function GenericLayout(props) {
 
 function BodyLayout(props) {
 
-    useEffect(() => {
-        if (props.dirty) {
-            API.getPosts()
-            .then(posts => {
-                props.setPostList(posts);
-                props.setDirty(false);
-            })
-            .catch(err => {console.log(err);});
-        }
-    }, [props.dirty]);
-
 
     function PostList() {
         return (
             <div>
                 {props.posts
-                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))      // TODO: remove the sorting because it is already handled by the server, and test if it works (check if it works also for comments)
                     .map(post => (
-                        <PostCard key={post.id} post={post} />
+                        <PostCard key={post.id} post={post} deletePost={props.deletePost} />
                     ))
                 }
             </div>
@@ -100,7 +88,36 @@ function BodyLayout(props) {
     );
 }
 
-function AddPostLayout() {
+function AddPostLayout(props) {
+
+    const [title, setTitle] = useState('');
+    const [text, setText] = useState('');
+    const [maxComments, setMaxComments] = useState(undefined);
+
+    const [errorMsg, setErrorMsg] = useState('');
+
+    const handleSubmit = (event) => {
+        event.preventDefault();   // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
+
+        const post = {
+            "title": title.trim(),
+            "text": text.trim(),
+        };
+
+        if (maxComments && !isNaN(parseInt(maxComments)))    // add 'maxComments' only if it is defined and it is a number
+            post.maxComments = maxComments;
+
+        // Perform data validation
+        if (post.title.length == 0)
+            setErrorMsg('Title of the post seems to be empty');
+        if (post.text.length == 0)
+            setErrorMsg('Text of the post seems to be empty');
+        else {
+            // Proceed to update the data
+            props.createPost(post);
+        }
+    }
+
     return (
         <Container className="my-4">
             <Row className="justify-content-center">
@@ -108,23 +125,23 @@ function AddPostLayout() {
                     <Card className="shadow border-1 rounded-4 p-3">
                         <Card.Body>
                             <h3 className="mb-4 text-center">Add New Post</h3>
-                            <Form>
+                            <Form onSubmit={handleSubmit}>
                                 {/* Title of the post */}
                                 <Form.Group className="mb-3">
                                     <Form.Label>Title</Form.Label><span className="text-danger ms-1">*</span>
-                                    <Form.Control type="text" placeholder="Enter the post title" required />
+                                    <Form.Control type="text" onChange={event => setTitle(event.target.value)} placeholder="Enter the post title" required />
                                 </Form.Group>
 
                                 {/* Text of the post */}
                                 <Form.Group className="mb-3">
                                     <Form.Label>Text</Form.Label><span className="text-danger ms-1">*</span>
-                                    <Form.Control as="textarea" rows={5} placeholder="Enter the post content" required />
+                                    <Form.Control as="textarea" onChange={event => setText(event.target.value)} rows={5} placeholder="Enter the post content" required />
                                 </Form.Group>
 
                                 {/* Max number of allowed comments */}
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Max Comments</Form.Label>   {/* OPTIONAL FIELD -> 'required' not included */}
-                                    <Form.Control type="number" min={0} placeholder="Enter maximum number of allowed comments" />
+                                    <Form.Label>Max Comments</Form.Label>   {/* OPTIONAL FIELD -> 'required' attribute not inserted */}
+                                    <Form.Control type="number" onChange={event => setMaxComments(event.target.value)} min={0} placeholder="Enter maximum number of allowed comments" />
                                 </Form.Group>
 
                                 <p className="text-muted mb-4" style={{ fontSize: '0.9rem' }}>

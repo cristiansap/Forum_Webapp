@@ -14,7 +14,7 @@ function convertPostFromDbRecord(record) {
     text: record.text,
     authorName: record.authorName,  // obtained through JOIN with USER table
     authorId: record.authorId,    // obtained through JOIN with USER table
-    timestamp: record.timestamp,
+    timestamp: dayjs(record.timestamp),
     maxComments: record.maxComments,
     commentCount: record.commentCount  // obtained through a subquery (this is not directly available info)
   };

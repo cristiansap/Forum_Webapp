@@ -62,8 +62,11 @@ app.use(session({
   secret: "87d99e23e0e459e26a43f7ad02df5c5c5694c747",     // secret = SHA-1("I am the student Cristian Sapia and this is the secret for the Forum Exam from the web application course")
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, secure: false },    // httpOnly: true (the cookie will be inaccessible to JavaScript code running in the browser)
-}));                                            // secure: false (for the purposes of this course HTTPS is not used, but in a real-world scenario just set this option to "true")
+  cookie: { 
+    httpOnly: true,     // httpOnly: true (the cookie will be inaccessible to JavaScript code running in the browser)
+    secure: false       // secure: false (for the purposes of this course HTTPS is not used, but in a real-world scenario just set this option to "true")
+  },
+}));
 app.use(passport.authenticate('session'));
 
 
@@ -109,8 +112,8 @@ app.get('/api/posts',
 // This route adds a new post to the forum.
 app.post('/api/posts',    // TODO: include the middleware isLoggedIn
   [
-    check('title').isLength({ min: 1 }),    // TODO: should we set a max or not?
-    check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
+    check('title').isLength({ min: 1 }),
+    check('text').isLength({ min: 1 }).withMessage('Text cannot be empty'),
     check('maxComments').optional({ checkFalsy: true }).isInt({ min: 0 }).toInt()   // check if present and not falsy (e.g. null, ""), and maxComments must represent an integer >= 0, then it is parsed to Int
   ],
   async (req, res) => {
@@ -128,6 +131,7 @@ app.post('/api/posts',    // TODO: include the middleware isLoggedIn
     };
 
     try {
+      console.log("New post request:", req.body);   // TODO: delete this debug console log
       const createdPost = await postDao.createPost(post);   // TODO: pass 'req.user.id' as first parameter 
       res.json(createdPost);
     } catch (err) {
@@ -175,7 +179,7 @@ app.delete('/api/posts/:id',        // TODO: include the middleware isLoggedIn
       if (numChanges === 0) {
         res.status(404).json({ error: "Post not deleted." });
       } else {
-        res.status(204).end();  // deleted successfully, no content
+        res.status(200).json(numChanges);  // deleted successfully
       }
     } catch (err) {
       console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
@@ -210,7 +214,7 @@ app.get('/api/posts/:id/comments',
 app.post('/api/posts/:id/comments', 
   [
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
-    check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
+    check('text').isLength({ min: 1 }).withMessage('Text cannot be empty'),
   ],
   
   async (req, res) => {
@@ -241,7 +245,7 @@ app.post('/api/posts/:id/comments',
 app.put('/api/comments/:id',      // TODO: include the middleware isLoggedIn
   [
     check('id').isInt({ min: 1 }).toInt(),    // check: the id must represent a positive integer, then it is parsed to Int
-    check('text').trim().isLength({ min: 1 }).withMessage('Text cannot be empty'),
+    check('text').isLength({ min: 1 }).withMessage('Text cannot be empty'),
   ],
 
   async (req, res) => {
@@ -315,7 +319,7 @@ app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
       if (numChanges === 0) {
         res.status(404).json({ error: "Comment not deleted." });
       } else {
-        res.status(204).end();  // deleted successfully, no content
+        res.status().json(numChanges);  // deleted successfully
       }
     } catch (err) {
       console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.

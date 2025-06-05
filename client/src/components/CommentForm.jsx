@@ -12,7 +12,7 @@ function CommentForm(props) {
 
 
     const handleSubmit = (event) => {
-        event.preventDefault();     // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
+        event.preventDefault();   // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
 
     }
 

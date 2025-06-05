@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 
 const SERVER_URL = 'http://localhost:3001/api/';
 
@@ -42,7 +41,7 @@ const getPosts = async () => {
         text: post.text,
         authorName: post.authorName,
         authorId: post.authorId,
-        timestamp: dayjs(post.timestamp),
+        timestamp: post.timestamp,
         maxComments: post.maxComments,
         commentCount: post.commentCount
       }
@@ -90,7 +89,7 @@ const getCommentsForPost = async (postId) => {
         text: comment.text,
         authorName: comment.authorName,
         authorId: comment.authorId,
-        timestamp: dayjs(comment.timestamp),
+        timestamp: comment.timestamp,
         postId: postId,
         isInterestingForCurrentUser: comment.isInterestingForCurrentUser,
         countInterestingMarks: comment.countInterestingMarks

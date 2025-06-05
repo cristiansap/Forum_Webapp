@@ -107,5 +107,7 @@
 
 /* Correctly handle '\n' characters in post and comment text */
 .multiline-text {
-  white-space: pre-line !important;   /* tell the browser to respect newline characters (otherwise ignored) */
+  white-space: pre-wrap !important;   /* tell the browser to respect newline characters (otherwise ignored) */
+  white-space: pre !important;
+  overflow-wrap: break-word !important;
 }

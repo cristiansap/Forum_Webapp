@@ -2,6 +2,7 @@ import { Card, Button, Collapse, ListGroup } from 'react-bootstrap';
 import { Outlet, Link, useParams, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import API from '../API.js';
+import dayjs from 'dayjs';
 
 
 function formatTextWithNewlines(text) {
@@ -11,40 +12,45 @@ function formatTextWithNewlines(text) {
 }
 
 function CommentsCollapse(props) {
+  
   return (
     <Collapse in={props.showComments}>
       <div className="mt-3">
         <h5 className="mb-3">Comments</h5>
         <ListGroup>
           {props.comments?.length > 0 ? (
-            props.comments.map((comment, idx) => (
-              <ListGroup.Item key={comment.id || idx}>
-                <div className="d-flex align-items-start">
-                  <Button variant="link" className="p-0 me-3 interesting-button tooltip-wrapper">
-                    <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} />
-                    <span className="tooltip-text">Mark comment as interesting</span>
-                  </Button>
-                  <div className="flex-grow-1">
-                    <p className="m-0 multiline-text">{formatTextWithNewlines(comment.text)}</p>
-                    <small className="text-muted">
-                      &mdash; {comment.authorName || 'anonymous'} [{(comment.timestamp).format('YYYY-MM-DD HH:mm:ss')}]
-                    </small>
-                  </div>
-                  <div className="ms-2">
-                    <Link to={`/edit-comment/${comment.id}`} >
-                      <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
-                        onClick={() => console.log(`Comment with id ${comment.id} edited`)} >
-                        <i className="bi bi-pencil-fill" />
-                      </Button>
-                    </Link>
-                    <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
-                      onClick={() => console.log("Comment deleted")} >
-                      <i className="bi bi-trash-fill" />
+            props.comments.map((comment) => {
+              const localTimestamp = new Date(comment.timestamp).toLocaleString();
+              const dayjsTimestamp = dayjs(localTimestamp).format('YYYY-MM-DD HH:mm:ss');
+              return (
+                <ListGroup.Item key={comment.id}>
+                  <div className="d-flex align-items-start">
+                    <Button variant="link" className="p-0 me-3 interesting-button tooltip-wrapper">
+                      <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} />
+                      <span className="tooltip-text">Mark comment as interesting</span>
                     </Button>
+                    <div className="flex-grow-1">
+                      <p className="m-0 multiline-text">{formatTextWithNewlines(comment.text)}</p>
+                      <small className="text-muted">
+                        &mdash; {comment.authorName || 'anonymous'} [{dayjsTimestamp}]
+                      </small>
+                    </div>
+                    <div className="ms-2">
+                      <Link to={`/edit-comment/${comment.id}`} >
+                        <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
+                          onClick={() => console.log(`Comment with id ${comment.id} edited`)} >
+                          <i className="bi bi-pencil-fill" />
+                        </Button>
+                      </Link>
+                      <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
+                        onClick={() => console.log("Comment deleted")} >
+                        <i className="bi bi-trash-fill" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </ListGroup.Item>
-            ))
+                </ListGroup.Item>
+              );
+            })
           ) : (
             <ListGroup.Item>
               <div className="text-center text-muted py-2">
@@ -70,7 +76,7 @@ function PostCard(props) {
         // Fetching all comments for the post on which the user pressed the "Show Comments" button
         const fetchedComments = await API.getCommentsForPost(props.post.id);
         setCommentsCache(prev => ({ ...prev, [props.post.id]: fetchedComments }));
-        setShowComments(true);         // and then show comments
+        setShowComments(true);      // and then show comments
         
       } catch (err) {
         console.error("An error occurred when fetching comments:", err);
@@ -80,6 +86,9 @@ function PostCard(props) {
     }
   };
 
+  const localTimestamp = new Date(props.post.timestamp).toLocaleString();
+  const dayjsTimestamp = dayjs(localTimestamp).format('YYYY-MM-DD HH:mm:ss');
+
   return (
     <Card className="mb-4 mx-auto" style={{ maxWidth: '700px' }}>
       <Card.Body>
@@ -87,7 +96,7 @@ function PostCard(props) {
           <Card.Title className="mb-0">
             {props.post.title}
           </Card.Title>
-          <small className="text-muted">{(props.post.timestamp).format('YYYY-MM-DD HH:mm:ss')}</small>
+          <small className="text-muted">{dayjsTimestamp}</small>
         </div>
         <Card.Subtitle className="mb-2 text-muted">by {props.post.authorName}</Card.Subtitle>
 
@@ -115,7 +124,7 @@ function PostCard(props) {
           </Link>
 
           <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
-              onClick={() => console.log("POST DELETED")}>
+              onClick={() => props.deletePost(props.post.id)}>
             <i className="bi bi-trash-fill me-1" />
             Delete Post
           </Button>
