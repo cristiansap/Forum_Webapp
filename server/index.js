@@ -234,12 +234,35 @@ app.post('/api/posts/:id/comments',
       const addedComment = await commentDao.addCommentToPost(comment, req.params.id);  // TODO: pass 'req.user.id' as first parameter 
       res.json(addedComment);
     } catch (err) {
-      console.error(err);
+      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(500).json({ error: 'Database error while adding comment.' });
     }
 });
 
-// 6. Update an existing comment, by providing the new text.
+// 6. Retrieve an existing comment given its id.
+// GET /api/comments/<id>
+// Given a comment id, this route retrieves the corresponding comment.
+app.get('/api/comments/:id',      // TODO: include the middleware isLoggedIn
+  [
+    check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
+  ],
+  async (req, res) => {
+    try {
+      const comment = await commentDao.getCommentById(req.params.id);  // TODO: add 'req.user.id' as first parameter of getCommentById()
+      if (comment.error) {
+        res.status(404).json(comment);  // comment not found
+      } else {
+        res.json(comment);  // comment found
+      }
+    } catch (err) {
+      console.error(err);  // Logging errors is useful while developing, to catch SQL errors etc.
+      res.status(503).json({ error: 'Database error while retrieving the single comment.' });
+    }
+  }
+);
+
+
+// 7. Update an existing comment, by providing the new text.
 // PUT /api/comments/<id>
 // This route allows to modify a comment, specifiying its id and the new text.
 app.put('/api/comments/:id',      // TODO: include the middleware isLoggedIn
@@ -285,7 +308,7 @@ app.put('/api/comments/:id',      // TODO: include the middleware isLoggedIn
   }
 );
 
-// 7. Delete an existing comment, given its id.
+// 8. Delete an existing comment, given its id.
 // DELETE /api/comments/<id>
 // Given a comment id, this route deletes the associated comment from the forum.
 app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
@@ -319,7 +342,7 @@ app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
       if (numChanges === 0) {
         res.status(404).json({ error: "Comment not deleted." });
       } else {
-        res.status().json(numChanges);  // deleted successfully
+        res.status(200).json(numChanges);  // deleted successfully
       }
     } catch (err) {
       console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
@@ -328,7 +351,7 @@ app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
   }
 );
 
-// 8. Mark / unmark an existing comment as interesting / not interesting, given its id.
+// 9. Mark / unmark an existing comment as interesting / not interesting, given its id.
 // PUT /api/comments/<id>/interesting
 // Given a comment id, this route modifies the associated interesting flag.
 app.put('/api/comments/:id/interesting',    // TODO: include the middleware isLoggedIn

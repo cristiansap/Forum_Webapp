@@ -39,6 +39,10 @@ Content-Type: application/json
 }
 ###
 
+## Retrieve a single comment (auth + owner or admin)
+GET http://localhost:3001/api/comments/5 HTTP/1.1
+###
+
 ## Edit a comment (auth + owner or admin)
 PUT http://localhost:3001/api/comments/5 HTTP/1.1
 Content-Type: application/json

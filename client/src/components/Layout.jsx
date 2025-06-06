@@ -1,5 +1,5 @@
-import { Row, Col, Button, Form, Card, Container, Alert } from 'react-bootstrap';
-import { Outlet, Link, useParams, Navigate } from 'react-router-dom';
+import { Row, Col, Button, Form, Card, Container, Spinner, Alert } from 'react-bootstrap';
+import { Outlet, Link, useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import { CustomNavbar } from './CustomNavbar';
@@ -54,7 +54,7 @@ function BodyLayout(props) {
             <div>
                 {props.posts
                     .map(post => (
-                        <PostCard key={post.id} post={post} deletePost={props.deletePost} />
+                        <PostCard key={post.id} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment} />
                     ))
                 }
             </div>
@@ -82,8 +82,18 @@ function BodyLayout(props) {
                 }
             </div>
 
-            <PostList />
-
+            {props.dirty ? (
+                <Container className="d-flex">
+                    <Row className="justify-content-center align-self-center w-100" style={{ marginBottom: '20vh', marginTop: '20vh' }}>
+                        <Col xs="mt-10" className="text-center">
+                            <Spinner animation="border" role="status" />
+                            <div>Loading posts...</div>
+                        </Col>
+                    </Row>
+                </Container>
+            ) : (
+                <PostList />
+            )}
         </>
     );
 }
@@ -99,22 +109,26 @@ function AddPostLayout(props) {
     const handleSubmit = (event) => {
         event.preventDefault();   // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
 
-        const post = {
-            "title": title.trim(),
-            "text": text.trim(),
+        const newPost = {
+            "title": title,
+            "text": text,
         };
 
         if (maxComments && !isNaN(parseInt(maxComments)))    // add 'maxComments' only if it is defined and it is a number
-            post.maxComments = maxComments;
+            newPost.maxComments = maxComments;
 
         // Perform data validation
-        if (post.title.length == 0)
+        if (newPost.title.trim().length == 0) {
             setErrorMsg('Title of the post seems to be empty');
-        if (post.text.length == 0)
+            return;
+        }
+        if (newPost.text.length == 0) {
             setErrorMsg('Text of the post seems to be empty');
+            return;
+        }
         else {
             // Proceed to update the data
-            props.createPost(post);
+            props.createPost(newPost);
         }
     }
 
@@ -125,23 +139,24 @@ function AddPostLayout(props) {
                     <Card className="shadow border-1 rounded-4 p-3">
                         <Card.Body>
                             <h3 className="mb-4 text-center">Add New Post</h3>
+                            { errorMsg ? <Alert variant='danger' onClose={()=>setErrorMsg('')} dismissible>{errorMsg}</Alert> : false }
                             <Form onSubmit={handleSubmit}>
                                 {/* Title of the post */}
                                 <Form.Group className="mb-3">
                                     <Form.Label>Title</Form.Label><span className="text-danger ms-1">*</span>
-                                    <Form.Control type="text" onChange={event => setTitle(event.target.value)} placeholder="Enter the post title" required />
+                                    <Form.Control type="text" value={title} onChange={event => setTitle(event.target.value)} placeholder="Enter the post title" required />
                                 </Form.Group>
 
                                 {/* Text of the post */}
                                 <Form.Group className="mb-3">
                                     <Form.Label>Text</Form.Label><span className="text-danger ms-1">*</span>
-                                    <Form.Control as="textarea" onChange={event => setText(event.target.value)} rows={5} placeholder="Enter the post content" required />
+                                    <Form.Control as="textarea" value={text} onChange={event => setText(event.target.value)} rows={5} placeholder="Enter the post content" required />
                                 </Form.Group>
 
                                 {/* Max number of allowed comments */}
                                 <Form.Group className="mb-3">
                                     <Form.Label>Max Comments</Form.Label>   {/* OPTIONAL FIELD -> 'required' attribute not inserted */}
-                                    <Form.Control type="number" onChange={event => setMaxComments(event.target.value)} min={0} placeholder="Enter maximum number of allowed comments" />
+                                    <Form.Control type="number" value={maxComments ?? ''} onChange={event => setMaxComments(event.target.value)} min={0} placeholder="Enter maximum number of allowed comments" />
                                 </Form.Group>
 
                                 <p className="text-muted mb-4" style={{ fontSize: '0.9rem' }}>
@@ -163,23 +178,55 @@ function AddPostLayout(props) {
     );
 }
 
-function AddCommentLayout() {
+function AddCommentLayout(props) {
+
+    const { postId } = useParams();
+
     return (
-        <CommentForm />
+        <CommentForm addCommentToPost={props.addCommentToPost} postId={parseInt(postId)} />
     );
 }
 
 function EditCommentLayout(props) {
 
+    const navigate = useNavigate();  // to be able to call useNavigate, the component must already be in <BrowserRouter> (done in main.jsx)
+
+    // Retrieve the id of the comment to edit from the URL
     const { id } = useParams();
-    const commentToEdit = props.comments && props.comments.find(c => c.id === parseInt(id));
+
+    const [commentToEdit, setCommentToEdit] = useState(null);
+
+    useEffect(() => {
+        API.getCommentById(id)
+            .then(comment => {
+                if (comment.error) {
+                    navigate('/');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });   // scrolls the window smoothly to the top of the page
+                } else {
+                    setCommentToEdit(comment);
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching the comment:', err);
+                navigate('/');
+                window.scrollTo({ top: 0, behavior: 'smooth' });   // scrolls the window smoothly to the top of the page
+            });
+    }, [id]);
 
     return (
         <>
-            { commentToEdit ? 
-                <CommentForm commentToEdit={commentToEdit} />
-                : <Navigate to={"/"} />
-            }
+            {commentToEdit ? (
+                <CommentForm commentToEdit={commentToEdit} editComment={props.editComment} />
+            ) : (
+                <Container className="d-flex">
+                    <Row className="justify-content-center align-self-center w-100" style={{ marginBottom: '20vh', marginTop: '20vh' }}>
+                        <Col xs="mt-10" className="text-center">
+                            <Spinner animation="border" role="status" />
+                            <div>Loading comment...</div>
+                        </Col>
+                    </Row>
+                </Container>
+            )}
         </>
     );
 }

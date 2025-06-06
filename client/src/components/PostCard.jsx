@@ -13,8 +13,20 @@ dayjs.extend(timezone);
 function formatTextWithNewlines(text) {
   if (!text)
     return '';
-  return text.replace(/\\n/g, '\n');    // convert literal strings '\n' to real newline characters
+
+  // Convert literal '\n' to real newlines if needed
+  let processedText = text.replace(/\\n/g, '\n');
+
+  // If the string ends with one or more newlines, add a zero-width space ('\u200B')
+  // NOTE: this is necessary to avoid the standard HTML rendering behavior (which avoids adding unnecessary “white space” at the end)
+  if (/\n+$/.test(processedText)) {
+    processedText += '\u200B';  // this trick avoids visual problems and does not introduce visible characters
+                                // into the text, but forces the rendering of the last empty line.
+  }
+
+  return processedText;
 }
+
 
 function CommentsCollapse(props) {
   
@@ -29,12 +41,12 @@ function CommentsCollapse(props) {
               const dayjsTimestamp = dayjs.utc(comment.timestamp).tz(dayjs.tz.guess()).format('YYYY-MM-DD HH:mm:ss');
               return (
                 <ListGroup.Item key={comment.id}>
-                  <div className="d-flex align-items-start">
+                  <div className="d-flex align-items-start justify-content-between">
                     <Button variant="link" className="p-0 me-3 interesting-button tooltip-wrapper">
                       <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} />
                       <span className="tooltip-text">Mark comment as interesting</span>
                     </Button>
-                    <div className="flex-grow-1">
+                    <div className="flex-grow-1 limited-width-text">
                       <p className="m-0 multiline-text">{formatTextWithNewlines(comment.text)}</p>
                       <small className="text-muted">
                         &mdash; {comment.authorName || 'anonymous'} [{dayjsTimestamp}]
@@ -42,13 +54,12 @@ function CommentsCollapse(props) {
                     </div>
                     <div className="ms-2">
                       <Link to={`/edit-comment/${comment.id}`} >
-                        <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
-                          onClick={() => console.log(`Comment with id ${comment.id} edited`)} >
+                        <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn">
                           <i className="bi bi-pencil-fill" />
                         </Button>
                       </Link>
                       <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
-                        onClick={() => console.log("Comment deleted")} >
+                        onClick={() => props.deleteComment(comment.id)} >
                         <i className="bi bi-trash-fill" />
                       </Button>
                     </div>
@@ -97,8 +108,8 @@ function PostCard(props) {
   return (
     <Card className="mb-4 mx-auto" style={{ maxWidth: '700px' }}>
       <Card.Body>
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <Card.Title className="mb-0">
+        <div className="d-flex justify-content-between mb-2">
+          <Card.Title className="mb-0 limited-width-text">
             {props.post.title}
           </Card.Title>
           <small className="text-muted">{dayjsTimestamp}</small>
@@ -121,7 +132,7 @@ function PostCard(props) {
             {showComments ? 'Hide Comments' : 'Show Comments'}
           </Button>
 
-          <Link to={'add-comment'} >
+          <Link to={`add-comment/${props.post.id}`}>
             <Button size="sm" className="add-comment-button">
               <i className="bi bi-chat-square-text-fill me-1"></i>
               Add Comment
@@ -135,7 +146,7 @@ function PostCard(props) {
           </Button>
         </div>
 
-        <CommentsCollapse comments={commentsCache[props.post.id]} showComments={showComments} />
+        <CommentsCollapse comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} />
             
       </Card.Body>
     </Card>

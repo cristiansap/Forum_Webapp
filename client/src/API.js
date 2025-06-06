@@ -115,16 +115,36 @@ const addCommentToPost = async (postId, comment) => {
 };
 
 /**
+ * This function retrieves a single comment given its id.
+ */
+const getCommentById = async (commentId) => {
+  return getJson(
+    fetch(SERVER_URL + 'comments/' + commentId), {
+      method: 'GET',    // TODO: add the following line below 'method' -> credentials: 'include'  // the route is protected by authentication, so authentication cookie must be forwarded
+    }
+  ).then(comment => {
+    // Return the comment including only the necessary information
+    return {
+      id: comment.id,
+      text: comment.text,
+      authorId: comment.authorId,
+      postId: comment.postId,
+    };
+  });
+};
+
+
+/**
  * This function updates the text of an existing comment.
  */
-const updateComment = async (commentId, newText) => {
+const updateComment = async (commentId, newComment) => {
   return getJson(
     fetch(SERVER_URL + 'comments/' + commentId, {
       method: 'PUT',    // TODO: add the following line below 'method' -> credentials: 'include'  // the route is protected by authentication, so authentication cookie must be forwarded
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text: newText })
+      body: JSON.stringify(newComment)
     })
   );
 };
@@ -156,5 +176,5 @@ const markOrUnmarkCommentAsInteresting = async (commentId, interesting) => {
 };
 
 
-const API = { getPosts, createPost, deletePost, getCommentsForPost, addCommentToPost, updateComment, deleteComment, markOrUnmarkCommentAsInteresting};
+const API = { getPosts, createPost, deletePost, getCommentsForPost, addCommentToPost, getCommentById, updateComment, deleteComment, markOrUnmarkCommentAsInteresting};
 export default API;

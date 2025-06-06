@@ -67,7 +67,7 @@ exports.getCommentsForPost = (postId) => {      // TODO: add authorId as first p
 /**
  * This function retrieves a single comment given its id.
  */
-exports.getCommentById = (id) => {
+exports.getCommentById = (id) => {        // TODO: add 'userId' as first parameter adding the comment: // userId represents the user who is trying to retrieve the comment
     return new Promise((resolve, reject) => {
         const sql = `SELECT c.id, c.text, c.timestamp, c.post_ID AS postId, u.name AS authorName, u.id AS authorId,
                     0 AS countInterestingMarks, FALSE AS isInterestingForCurrentUser
@@ -110,7 +110,7 @@ exports.addCommentToPost = (comment, postId) => {    // TODO: pass 'authorId' as
                 reject(err);
             } else {
                 // return the object just inserted, with the automatically assigned id and timestamp
-                exports.getCommentById(this.lastID)
+                exports.getCommentById(this.lastID)     // TODO: add 'comment.authorId' as first parameter adding the comment: // comment.authorId represents the logged user
                     .then(comment => resolve(comment))
                     .catch(err => reject(err));
             }

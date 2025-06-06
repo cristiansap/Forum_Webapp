@@ -105,9 +105,13 @@
   color: white;
 }
 
-/* Correctly handle '\n' characters in post and comment text */
+/* Correctly handle '\n' characters and word-break in post and comment texts */
 .multiline-text {
-  white-space: pre-wrap !important;   /* tell the browser to respect newline characters (otherwise ignored) */
-  white-space: pre !important;
-  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;     /* tell the browser to respect newline characters (otherwise ignored) */
+  word-break: break-word !important;    /* break too long words */
+  overflow-wrap: break-word !important; /* fallback */
+}
+
+.limited-width-text {
+  max-width: 70%;
 }

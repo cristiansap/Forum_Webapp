@@ -44,11 +44,10 @@ function App() {
       .then(() => {
         setDirty(true);  // trigger useEffect which reloads all posts
         navigate('/');
+        window.scrollTo({ top: 0, behavior: 'smooth' });   // scrolls the window smoothly to the top of the page
       })
       .catch((err) => console.log(err));
   }
-
-
 
   function deletePost(postId) {
     API.deletePost(postId)
@@ -56,14 +55,38 @@ function App() {
       .catch(err => console.log(err));
   }
 
+  function addCommentToPost(postId, comment) {
+    API.addCommentToPost(postId, comment)
+      .then(() => {
+        navigate('/');
+        window.scrollTo({ top: 0, behavior: 'smooth' });   // scrolls the window smoothly to the top of the page
+      })
+      .catch((err) => console.log(err));
+  }
+
+  function editComment(commentId, newComment) {
+    API.updateComment(commentId, newComment)
+      .then(() => {
+        navigate('/');
+        window.scrollTo({ top: 0, behavior: 'smooth' });   // scrolls the window smoothly to the top of the page
+      })
+      .catch((err) => console.log(err));
+  }
+
+  function deleteComment(commentId) {
+      API.deleteComment(commentId)
+        .then(() => setDirty(true))
+        .catch(err => console.log(err));
+  }
+
 
   return (
     <Routes>
       <Route path="/" element={<GenericLayout />}>
-        <Route index element={<BodyLayout posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty} deletePost={deletePost} />} />
+        <Route index element={<BodyLayout posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty} deletePost={deletePost} deleteComment={deleteComment} />} />
         <Route path="add-post" element={<AddPostLayout createPost={createPost} />} />
-        <Route path="add-comment" element={<AddCommentLayout />} />
-        <Route path="edit-comment/:id" element={<EditCommentLayout />} />
+        <Route path="add-comment/:postId" element={<AddCommentLayout addCommentToPost={addCommentToPost} />} />
+        <Route path="edit-comment/:id" element={<EditCommentLayout editComment={editComment} />} />
         <Route path="*" element={<NotFoundLayout />} />
       </Route>
         

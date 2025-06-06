@@ -14,6 +14,24 @@ function CommentForm(props) {
     const handleSubmit = (event) => {
         event.preventDefault();   // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
 
+        const newComment = {
+            "text": text,     // TODO: add the line: "authorId": props.user.id (where 'user' is a React state in App.jsx which needs to be sent through all the components)
+        }
+
+        // Perform data validation
+        if (newComment.text.length == 0) {
+            setErrorMsg('Text of the comment seems to be empty.');
+        } else {
+            // Proceed to update the data
+            
+            if (props.commentToEdit) {      // decide if it is an edit or an add
+                props.editComment(props.commentToEdit.id, newComment);
+            }
+            else {
+                props.addCommentToPost(props.postId, newComment);
+            }
+        }
+
     }
 
     return (
