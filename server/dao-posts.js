@@ -69,8 +69,6 @@ exports.getPostById = (id) => {
     });
 };
 
-
-
 /**
  * This function adds a new post in the database.
  * The post id is added automatically by the DB, and it is returned as this.lastID.

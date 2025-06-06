@@ -93,9 +93,9 @@ function PostCard(props) {
         const fetchedComments = await API.getCommentsForPost(props.post.id);
         setCommentsCache(prev => ({ ...prev, [props.post.id]: fetchedComments }));
         setShowComments(true);      // and then show comments
-        
       } catch (err) {
         console.error("An error occurred when fetching comments:", err);
+        props.showError('Comments failed to load. Please try again.');   // show an alert message to the user
       }
     } else {
       setShowComments(false);

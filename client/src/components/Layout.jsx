@@ -54,7 +54,8 @@ function BodyLayout(props) {
             <div>
                 {props.posts
                     .map(post => (
-                        <PostCard key={post.id} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment} />
+                        <PostCard key={post.id} post={post} deletePost={props.deletePost}
+                            deleteComment={props.deleteComment} showError={props.showError} showSuccess={props.showSuccess} />
                     ))
                 }
             </div>
@@ -82,6 +83,14 @@ function BodyLayout(props) {
                 }
             </div>
 
+            { props.message.text ?
+                <div className="d-flex justify-content-center mt-2">
+                    <Alert variant={props.message.type} className="text-center w-50" onClose={() => props.setMessage({ type: '', text: '' })} dismissible >
+                        {props.message.text}
+                    </Alert>
+                </div> : null
+            }
+
             {props.dirty ? (
                 <Container className="d-flex">
                     <Row className="justify-content-center align-self-center w-100" style={{ marginBottom: '20vh', marginTop: '20vh' }}>
@@ -106,7 +115,7 @@ function AddPostLayout(props) {
 
     const [errorMsg, setErrorMsg] = useState('');
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();   // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
 
         const newPost = {
@@ -118,7 +127,7 @@ function AddPostLayout(props) {
             newPost.maxComments = maxComments;
 
         // Perform data validation
-        if (newPost.title.trim().length == 0) {
+        if (newPost.title.trim().length === 0) {
             setErrorMsg('Title of the post seems to be empty');
             return;
         }
@@ -128,7 +137,12 @@ function AddPostLayout(props) {
         }
         else {
             // Proceed to update the data
-            props.createPost(newPost);
+            try {
+                await props.createPost(newPost);    // it should return a Promise
+            } catch (err) {
+                const message = err?.error || 'Something went wrong while creating the post.';
+                setErrorMsg(message);
+            }
         }
     }
 
@@ -156,7 +170,8 @@ function AddPostLayout(props) {
                                 {/* Max number of allowed comments */}
                                 <Form.Group className="mb-3">
                                     <Form.Label>Max Comments</Form.Label>   {/* OPTIONAL FIELD -> 'required' attribute not inserted */}
-                                    <Form.Control type="number" value={maxComments ?? ''} onChange={event => setMaxComments(event.target.value)} min={0} placeholder="Enter maximum number of allowed comments" />
+                                    <Form.Control type="number" value={maxComments ?? ''} onChange={event => setMaxComments(event.target.value === '' ? undefined : parseInt(event.target.value))}
+                                        min={0} placeholder="Enter maximum number of allowed comments" />
                                 </Form.Group>
 
                                 <p className="text-muted mb-4" style={{ fontSize: '0.9rem' }}>
@@ -208,6 +223,7 @@ function EditCommentLayout(props) {
             })
             .catch(err => {
                 console.error('Error fetching the comment:', err);
+                props.showError('Could not retrieve the comment. Please try again.');   // show an alert message to the user
                 navigate('/');
                 window.scrollTo({ top: 0, behavior: 'smooth' });   // scrolls the window smoothly to the top of the page
             });
