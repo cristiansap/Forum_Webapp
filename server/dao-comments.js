@@ -3,7 +3,6 @@
 /* Data Access Object (DAO) module for accessing forum comments data */
 
 const db = require('./db');
-const dayjs = require('dayjs');
 
 function convertCommentFromDbRecord(record) {
   return {
@@ -11,7 +10,7 @@ function convertCommentFromDbRecord(record) {
     text: record.text,
     authorName: record.authorName,
     authorId: record.authorId,
-    timestamp: dayjs(record.timestamp),
+    timestamp: record.timestamp,
     postId: record.postId,
     isInterestingForCurrentUser: !!record.isInterestingForCurrentUser,  // cast to boolean (0 -> false ; 1 -> true)
     countInterestingMarks: record.countInterestingMarks,

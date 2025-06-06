@@ -8,7 +8,7 @@ import '../App.css'
 function CustomNavbar(props) {
   return (
     <Navbar variant="dark" className="main-color mb-4 ">
-        <Navbar.Brand className="mx-2 d-flex align-items-center">
+        <Navbar.Brand className="mx-4 d-flex align-items-center">
           <i className="bi bi-gem mx-2" style={{ fontSize: '1.8rem', color: 'gold' }} />
           <span style={{ fontSize: '1.4rem' }}>Royal Forum</span>
         </Navbar.Brand>

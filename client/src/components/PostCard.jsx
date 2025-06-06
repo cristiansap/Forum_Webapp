@@ -2,7 +2,12 @@ import { Card, Button, Collapse, ListGroup } from 'react-bootstrap';
 import { Outlet, Link, useParams, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import API from '../API.js';
+
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 
 function formatTextWithNewlines(text) {
@@ -20,8 +25,8 @@ function CommentsCollapse(props) {
         <ListGroup>
           {props.comments?.length > 0 ? (
             props.comments.map((comment) => {
-              const localTimestamp = new Date(comment.timestamp).toLocaleString();
-              const dayjsTimestamp = dayjs(localTimestamp).format('YYYY-MM-DD HH:mm:ss');
+              // Convert the UTC timestamp to the client's local time zone using the browser settings, and format it to display it properly
+              const dayjsTimestamp = dayjs.utc(comment.timestamp).tz(dayjs.tz.guess()).format('YYYY-MM-DD HH:mm:ss');
               return (
                 <ListGroup.Item key={comment.id}>
                   <div className="d-flex align-items-start">
@@ -86,8 +91,8 @@ function PostCard(props) {
     }
   };
 
-  const localTimestamp = new Date(props.post.timestamp).toLocaleString();
-  const dayjsTimestamp = dayjs(localTimestamp).format('YYYY-MM-DD HH:mm:ss');
+  // Convert the UTC timestamp to the client's local time zone using the browser settings, and format it to display it properly
+  const dayjsTimestamp = dayjs.utc(props.post.timestamp).tz(dayjs.tz.guess()).format('YYYY-MM-DD HH:mm:ss');
 
   return (
     <Card className="mb-4 mx-auto" style={{ maxWidth: '700px' }}>

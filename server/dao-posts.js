@@ -5,6 +5,7 @@
 
 const db = require('./db');
 
+
 // Convert a DB record into JSON object in API format (from snake_case to camelCase)
 // Note that JSON object requires camelCase as per the API specifications we defined.
 function convertPostFromDbRecord(record) {
@@ -14,7 +15,7 @@ function convertPostFromDbRecord(record) {
     text: record.text,
     authorName: record.authorName,  // obtained through JOIN with USER table
     authorId: record.authorId,    // obtained through JOIN with USER table
-    timestamp: dayjs(record.timestamp),
+    timestamp: record.timestamp,
     maxComments: record.maxComments,
     commentCount: record.commentCount  // obtained through a subquery (this is not directly available info)
   };
