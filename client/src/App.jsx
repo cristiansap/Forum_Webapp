@@ -5,8 +5,7 @@ import './App.css'
 import API from './API.js';
 
 import { useState, useEffect } from 'react';
-import { Container } from 'react-bootstrap';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 
 import { NotFoundLayout, LoginLayout, GenericLayout, BodyLayout, AddPostLayout, AddCommentLayout, EditCommentLayout } from './components/Layout.jsx'
 
@@ -30,12 +29,11 @@ function App() {
 
   const showError = (msg) => {
     setMessage({ type: 'danger', text: msg });
-    setTimeout(() => setMessage({ type: '', text: '' }), 4000);   // Hide the alert message after 4s
   };
 
   // This function is for handling errors in a centralized manner
   const handleErrors = (err) => {
-    let msg = 'An error occurred.';
+    let msg = '';
 
     if (err.error) {
       msg = err.error;
@@ -45,10 +43,14 @@ function App() {
       msg = err.errors[0].msg;
     } else if (typeof err === 'string') {
       msg = err;
+    } else {
+      msg = 'An unexpected error occurred. Please try again.';
     }
 
+    console.log('Full error object:', err);
+
+    // Show a simple error to the user
     showError(msg);
-    console.log(err);
   };
 
 
@@ -123,7 +125,6 @@ function App() {
         })
         .catch(err => handleErrors(err));
   }
-
 
   return (
     <Routes>

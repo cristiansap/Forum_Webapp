@@ -42,27 +42,36 @@ function CommentsCollapse(props) {
               return (
                 <ListGroup.Item key={comment.id}>
                   <div className="d-flex align-items-start justify-content-between">
-                    <Button variant="link" className="p-0 me-3 interesting-button tooltip-wrapper">
-                      <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} />
-                      <span className="tooltip-text">Mark comment as interesting</span>
-                    </Button>
+
+                    <div className="d-flex flex-column align-items-center me-3">
+                      <Button variant="link" className="p-0 interesting-button tooltip-wrapper">
+                        <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} 
+                          onClick={() => props.markOrUnmarkCommentAsInteresting(comment.id, !comment.isInterestingForCurrentUser)} />
+                        <span className="tooltip-text">Mark comment as interesting</span>
+                      </Button>
+                      <small className="text-muted">{comment.countInterestingMarks}</small>
+                    </div>
+
                     <div className="flex-grow-1 limited-width-text">
                       <p className="m-0 multiline-text">{formatTextWithNewlines(comment.text)}</p>
                       <small className="text-muted">
                         &mdash; {comment.authorName || 'anonymous'} [{dayjsTimestamp}]
                       </small>
                     </div>
+
                     <div className="ms-2">
                       <Link to={`/edit-comment/${comment.id}`} >
                         <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn">
                           <i className="bi bi-pencil-fill" />
                         </Button>
                       </Link>
+
                       <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
                         onClick={() => props.deleteComment(comment.id)} >
                         <i className="bi bi-trash-fill" />
                       </Button>
                     </div>
+
                   </div>
                 </ListGroup.Item>
               );
@@ -85,8 +94,8 @@ function PostCard(props) {
   const [showComments, setShowComments] = useState(false);
   const [commentsCache, setCommentsCache] = useState({});
 
-  const handleToggleComments = async () => {
 
+  const handleToggleComments = async () => {
     if (!showComments) {
       try {
         // Fetching all comments for the post on which the user pressed the "Show Comments" button
@@ -99,6 +108,26 @@ function PostCard(props) {
       }
     } else {
       setShowComments(false);
+    }
+  };
+
+  const markOrUnmarkCommentAsInteresting = async (commentId, interesting) => {
+    try {
+      await API.markOrUnmarkCommentAsInteresting(commentId, interesting);
+
+      setCommentsCache(prev => {
+        const updatedComments = prev[props.post.id].map(c =>
+          c.id === commentId ? {
+            ...c,
+            isInterestingForCurrentUser: interesting,
+            countInterestingMarks: c.countInterestingMarks + (interesting ? 1 : -1)
+          }
+          : c
+        );
+        return { ...prev, [props.post.id]: updatedComments };
+      });
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -146,7 +175,8 @@ function PostCard(props) {
           </Button>
         </div>
 
-        <CommentsCollapse comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} />
+        <CommentsCollapse comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} 
+                          markOrUnmarkCommentAsInteresting={markOrUnmarkCommentAsInteresting} />
             
       </Card.Body>
     </Card>

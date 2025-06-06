@@ -1,12 +1,15 @@
-import { Row, Col, Button, Form, Card, Container, Spinner, Alert } from 'react-bootstrap';
+import { Row, Col, Button, Container, Spinner, Alert } from 'react-bootstrap';
 import { Outlet, Link, useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import { CustomNavbar } from './CustomNavbar';
 import { PostCard } from './PostCard'
 import { CommentForm } from './CommentForm'
-import API from '../API.js';
+import { PostForm } from './PostForm'
 // TODO: import { LoginForm } from './Auth';
+
+import API from '../API.js';
+
 
 function NotFoundLayout() {
     return (
@@ -28,6 +31,20 @@ function LoginLayout(props) {
         </Row>
     );
 }
+
+function SpinnerLoadingLayout(props) {
+    return (
+        <Container className="d-flex">
+            <Row className="justify-content-center align-self-center w-100" style={{ marginBottom: '20vh', marginTop: '20vh' }}>
+                <Col xs="mt-10" className="text-center">
+                    <Spinner animation="border" role="status" />
+                    <div>{props.message}</div>
+                </Col>
+            </Row>
+        </Container>
+    );
+}
+
 
 function GenericLayout(props) {
     return (
@@ -54,8 +71,8 @@ function BodyLayout(props) {
             <div>
                 {props.posts
                     .map(post => (
-                        <PostCard key={post.id} post={post} deletePost={props.deletePost}
-                            deleteComment={props.deleteComment} showError={props.showError} showSuccess={props.showSuccess} />
+                        <PostCard key={post.id} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment}
+                            showError={props.showError} showSuccess={props.showSuccess} />
                     ))
                 }
             </div>
@@ -92,14 +109,7 @@ function BodyLayout(props) {
             }
 
             {props.dirty ? (
-                <Container className="d-flex">
-                    <Row className="justify-content-center align-self-center w-100" style={{ marginBottom: '20vh', marginTop: '20vh' }}>
-                        <Col xs="mt-10" className="text-center">
-                            <Spinner animation="border" role="status" />
-                            <div>Loading posts...</div>
-                        </Col>
-                    </Row>
-                </Container>
+                <SpinnerLoadingLayout message={'Loading posts...'} />
             ) : (
                 <PostList />
             )}
@@ -108,85 +118,11 @@ function BodyLayout(props) {
 }
 
 function AddPostLayout(props) {
-
-    const [title, setTitle] = useState('');
-    const [text, setText] = useState('');
-    const [maxComments, setMaxComments] = useState(undefined);
-
-    const [errorMsg, setErrorMsg] = useState('');
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();   // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
-
-        const newPost = {
-            "title": title,
-            "text": text,
-        };
-
-        if (maxComments && !isNaN(parseInt(maxComments)))    // add 'maxComments' only if it is defined and it is a number
-            newPost.maxComments = maxComments;
-
-        // Perform data validation
-        if (newPost.title.trim().length === 0) {
-            setErrorMsg('Title of the post seems to be empty');
-            return;
-        }
-        if (newPost.text.length == 0) {
-            setErrorMsg('Text of the post seems to be empty');
-            return;
-        }
-        else {
-            // Proceed to update the data
-            try {
-                await props.createPost(newPost);    // it should return a Promise
-            } catch (err) {
-                const message = err?.error || 'Something went wrong while creating the post.';
-                setErrorMsg(message);
-            }
-        }
-    }
-
     return (
         <Container className="my-4">
             <Row className="justify-content-center">
                 <Col md={8} lg={6}>
-                    <Card className="shadow border-1 rounded-4 p-3">
-                        <Card.Body>
-                            <h3 className="mb-4 text-center">Add New Post</h3>
-                            { errorMsg ? <Alert variant='danger' onClose={()=>setErrorMsg('')} dismissible>{errorMsg}</Alert> : false }
-                            <Form onSubmit={handleSubmit}>
-                                {/* Title of the post */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Title</Form.Label><span className="text-danger ms-1">*</span>
-                                    <Form.Control type="text" value={title} onChange={event => setTitle(event.target.value)} placeholder="Enter the post title" required />
-                                </Form.Group>
-
-                                {/* Text of the post */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Text</Form.Label><span className="text-danger ms-1">*</span>
-                                    <Form.Control as="textarea" value={text} onChange={event => setText(event.target.value)} rows={5} placeholder="Enter the post content" required />
-                                </Form.Group>
-
-                                {/* Max number of allowed comments */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Max Comments</Form.Label>   {/* OPTIONAL FIELD -> 'required' attribute not inserted */}
-                                    <Form.Control type="number" value={maxComments ?? ''} onChange={event => setMaxComments(event.target.value === '' ? undefined : parseInt(event.target.value))}
-                                        min={0} placeholder="Enter maximum number of allowed comments" />
-                                </Form.Group>
-
-                                <p className="text-muted mb-4" style={{ fontSize: '0.9rem' }}>
-                                    <span className="text-danger">*</span> Mandatory fields.
-                                </p>
-
-                                <div className="d-flex justify-content-between">
-                                    <Link to="/">
-                                        <Button variant="secondary">Cancel</Button>
-                                    </Link>
-                                    <Button className="submit-post-button" type="submit">Submit</Button>
-                                </div>
-                            </Form>
-                        </Card.Body>
-                    </Card>
+                    <PostForm createPost={props.createPost} />
                 </Col>
             </Row>
         </Container>
@@ -234,14 +170,7 @@ function EditCommentLayout(props) {
             {commentToEdit ? (
                 <CommentForm commentToEdit={commentToEdit} editComment={props.editComment} />
             ) : (
-                <Container className="d-flex">
-                    <Row className="justify-content-center align-self-center w-100" style={{ marginBottom: '20vh', marginTop: '20vh' }}>
-                        <Col xs="mt-10" className="text-center">
-                            <Spinner animation="border" role="status" />
-                            <div>Loading comment...</div>
-                        </Col>
-                    </Row>
-                </Container>
+                <SpinnerLoadingLayout message={'Loading comment...'} />
             )}
         </>
     );

@@ -379,7 +379,7 @@ app.put('/api/comments/:id/interesting',    // TODO: include the middleware isLo
       if (result.error)
         res.status(400).json(result);
       else
-        res.status(200).end();
+        res.json(result);
     } catch (err) {
       console.error(err);
       res.status(503).json({ error: 'Database error while updating interesting flag for a comment.' });

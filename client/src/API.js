@@ -23,7 +23,7 @@ function getJson(httpResponsePromise) {
                     .catch(err => reject({ error: "Cannot parse server response" }));  // something else
             }
         })
-        .catch(err => reject({ error: "Cannot communicate" }));  // connection error
+        .catch(err => reject({ error: "Cannot communicate with the server" }));  // connection error
     });
 }
 
