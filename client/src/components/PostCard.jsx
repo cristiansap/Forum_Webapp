@@ -103,7 +103,7 @@ function PostCard(props) {
         setCommentsCache(prev => ({ ...prev, [props.post.id]: fetchedComments }));
         setShowComments(true);      // and then show comments
       } catch (err) {
-        console.error("An error occurred when fetching comments:", err);
+        console.log("An error occurred when fetching comments:", err);
         props.showError('Comments failed to load. Please try again.');   // show an alert message to the user
       }
     } else {
@@ -127,7 +127,8 @@ function PostCard(props) {
         return { ...prev, [props.post.id]: updatedComments };
       });
     } catch (err) {
-      console.error(err);
+      console.log(err);
+      props.handleErrors(err);
     }
   };
 

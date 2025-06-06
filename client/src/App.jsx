@@ -131,7 +131,7 @@ function App() {
       <Route path="/" element={<GenericLayout />}>
         <Route index element={<BodyLayout posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty}
                                 deletePost={deletePost} deleteComment={deleteComment} message={message} setMessage={setMessage} 
-                                showError={showError} showSuccess={showSuccess} />} />
+                                showError={showError} showSuccess={showSuccess} handleErrors={handleErrors} />} />
         <Route path="add-post" element={<AddPostLayout createPost={createPost} />} />
         <Route path="add-comment/:postId" element={<AddCommentLayout addCommentToPost={addCommentToPost} />} />
         <Route path="edit-comment/:id" element={<EditCommentLayout editComment={editComment} setMessage={setMessage} 

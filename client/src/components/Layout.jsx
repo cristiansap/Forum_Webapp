@@ -72,7 +72,7 @@ function BodyLayout(props) {
                 {props.posts
                     .map(post => (
                         <PostCard key={post.id} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment}
-                            showError={props.showError} showSuccess={props.showSuccess} />
+                            showError={props.showError} showSuccess={props.showSuccess} handleErrors={props.handleErrors} />
                     ))
                 }
             </div>
