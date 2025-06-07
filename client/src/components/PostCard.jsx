@@ -47,7 +47,7 @@ function CommentsCollapse(props) {
                       <Button variant="link" className="p-0 interesting-button tooltip-wrapper">
                         <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} 
                           onClick={() => props.markOrUnmarkCommentAsInteresting(comment.id, !comment.isInterestingForCurrentUser)} />
-                        <span className="tooltip-text">Mark comment as interesting</span>
+                        <span className="tooltip-text-star-button">Mark comment as interesting</span>
                       </Button>
                       <small className="text-muted">{comment.countInterestingMarks}</small>
                     </div>
@@ -94,7 +94,6 @@ function PostCard(props) {
   const [showComments, setShowComments] = useState(false);
   const [commentsCache, setCommentsCache] = useState({});
 
-
   const handleToggleComments = async () => {
     if (!showComments) {
       try {
@@ -115,6 +114,7 @@ function PostCard(props) {
     try {
       await API.markOrUnmarkCommentAsInteresting(commentId, interesting);
 
+      // Optimistic update (of the interesting flag)
       setCommentsCache(prev => {
         const updatedComments = prev[props.post.id].map(c =>
           c.id === commentId ? {
@@ -126,6 +126,11 @@ function PostCard(props) {
         );
         return { ...prev, [props.post.id]: updatedComments };
       });
+      
+      // Refetch comments for that post
+      const refreshed = await API.getCommentsForPost(props.post.id);
+      setCommentsCache(prev => ({ ...prev, [props.post.id]: refreshed }));
+
     } catch (err) {
       console.log(err);
       props.handleErrors(err);
@@ -162,12 +167,24 @@ function PostCard(props) {
             {showComments ? 'Hide Comments' : 'Show Comments'}
           </Button>
 
-          <Link to={`add-comment/${props.post.id}`}>
-            <Button size="sm" className="add-comment-button">
-              <i className="bi bi-chat-square-text-fill me-1"></i>
-              Add Comment
-            </Button>
-          </Link>
+          { props.post.maxComments !== null && props.post.commentCount >= props.post.maxComments ? (
+            <div className="tooltip-wrapper">
+              <Button size="sm" className="add-comment-button" disabled >
+                <i className="bi bi-chat-square-text-fill me-1" />
+                Add Comment
+              </Button>
+              <span className="tooltip-text-add-comment-button">
+                Ops! Maximum number of comments reached.
+              </span>
+            </div>
+          ) : (
+            <Link to={`add-comment/${props.post.id}`}>
+              <Button size="sm" className="add-comment-button" >
+                <i className="bi bi-chat-square-text-fill me-1" />
+                Add Comment
+              </Button>
+            </Link>
+          )}
 
           <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
               onClick={() => props.deletePost(props.post.id)}>
