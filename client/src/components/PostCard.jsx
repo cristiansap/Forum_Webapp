@@ -41,16 +41,16 @@ function CommentsCollapse(props) {
             props.comments.map((comment) => {
               // Convert the UTC timestamp to the client's local time zone using the browser settings, and format it to display it properly
               const dayjsTimestamp = dayjs.utc(comment.timestamp).tz(dayjs.tz.guess()).format('YYYY-MM-DD HH:mm:ss');
-              const notAuthorized = !props.user || props.user.id !== comment.userId;
+              const notAuthorized = !props.user || (props.user.id !== comment.userId && !props.loggedInAsAdmin);
               return (
                 <ListGroup.Item key={comment.id}>
                   <div className="d-flex align-items-start justify-content-between">
 
                     <div className="d-flex flex-column align-items-center me-3">
                       <div className="tooltip-wrapper">
-                        <Button variant="link" className="p-0 interesting-button" disabled={!props.user}>
-                          <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`}
-                            onClick={() => props.markOrUnmarkCommentAsInteresting(comment.id, !comment.isInterestingForCurrentUser)} />
+                        <Button variant="link" className="p-0 interesting-button" disabled={!props.user}
+                          onClick={() => props.markOrUnmarkCommentAsInteresting(comment.id, !comment.isInterestingForCurrentUser)}>
+                          <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} />
                         </Button>
                         <span className="tooltip-text-star-button">
                           {props.user ? "Mark comment as interesting" : "You're not authenticated."}
@@ -69,7 +69,7 @@ function CommentsCollapse(props) {
                     <div className="ms-2">
 
                       <div className="tooltip-wrapper">
-                        <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
+                        <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-button"
                           onClick={() => navigate(`/edit-comment/${comment.id}`)}
                           disabled={notAuthorized}>
                           <i className="bi bi-pencil-fill" />
@@ -84,7 +84,7 @@ function CommentsCollapse(props) {
                       </div>
 
                       <div className="tooltip-wrapper">
-                        <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
+                        <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-button"
                           onClick={() => props.deleteComment(comment.id)}
                           disabled={notAuthorized}>
                           <i className="bi bi-trash-fill" />
@@ -106,8 +106,7 @@ function CommentsCollapse(props) {
           ) : (
             <ListGroup.Item>
               <div className="text-center text-muted py-2">
-                No comments available for this post.        {/* TODO: implement this check: if(isLoggedIn): No comments available for this post.
-                                                                                            else: No ANONYMOUS comments available for this post. */}
+                {props.user ? "No comments available for this post." : "No anonymous comments available for this post."}
               </div>
             </ListGroup.Item>
           )}
@@ -143,18 +142,23 @@ function PostCard(props) {
 
       // Optimistic update (of the interesting flag)
       setCommentsCache(prev => {
-        const updatedComments = prev[props.post.id].map(c =>
-          c.id === commentId ? {
-            ...c,
-            isInterestingForCurrentUser: interesting,
-            countInterestingMarks: c.countInterestingMarks + (interesting ? 1 : -1)
-          }
-          : c
-        );
-        return { ...prev, [props.post.id]: updatedComments };
+        if (props.post.id) {  // check it just to be sure
+          const updatedComments = prev[props.post.id].map(c =>
+            c.id === commentId ? {
+              ...c,
+              isInterestingForCurrentUser: interesting,
+              countInterestingMarks: c.countInterestingMarks + (interesting ? 1 : -1)
+            }
+              : c
+          );
+          return { ...prev, [props.post.id]: updatedComments };
+        } else {
+          return prev;
+        }
       });
       
-      // Refetch comments for that post
+      // Refetch comments for that post after waiting a small delay (100 ms)
+      await new Promise(res => setTimeout(res, 100));
       const refreshed = await API.getCommentsForPost(props.post.id);
       setCommentsCache(prev => ({ ...prev, [props.post.id]: refreshed }));
 
@@ -189,9 +193,11 @@ function PostCard(props) {
           <Button size="sm"
             onClick={handleToggleComments}
             className={
-              showComments ? 'main-color hide-comments-button' : 'main-color show-comments-button' }>
-            <i className={`bi ${showComments ? 'bi-caret-up-square-fill' : 'bi-caret-down-square-fill'} me-1`} />
-            {showComments ? 'Hide Comments' : 'Show Comments'}
+              showComments ? "main-color hide-comments-button" : "main-color show-comments-button" }>
+            <i className={`bi ${showComments ? "bi-caret-up-square-fill" : "bi-caret-down-square-fill"} me-1`} />
+            {showComments ? "Hide Comments" : (
+              props.user ? "Show Comments" : "Show Anonymous Comments"
+            )}
           </Button>
 
           {props.post.maxComments !== null && props.post.commentCount >= props.post.maxComments ? (
@@ -215,13 +221,13 @@ function PostCard(props) {
 
           
           <div className="tooltip-wrapper ms-auto">
-            <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
+            <Button variant="outline-danger" size="sm" className="ms-2 delete-post-button ms-auto"
               onClick={() => props.deletePost(props.post.id)}
-              disabled={!props.user || props.user.id !== props.post.userId}>
+              disabled={!props.user || (props.user.id !== props.post.userId && !props.loggedInAsAdmin)}>
               <i className="bi bi-trash-fill me-1" />
               Delete Post
             </Button>
-            {!props.user || props.user.id !== props.post.userId ? (
+            {!props.user || (props.user.id !== props.post.userId && !props.loggedInAsAdmin) ? (
               <span className="tooltip-text-delete-post-button">
                 {props.user ? "You're not authorized." : "You're not authenticated."}
               </span>
@@ -232,7 +238,7 @@ function PostCard(props) {
 
         </div>
 
-        <CommentsCollapse user={props.user} comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} 
+        <CommentsCollapse user={props.user} loggedInAsAdmin={props.loggedInAsAdmin} comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} 
                           markOrUnmarkCommentAsInteresting={markOrUnmarkCommentAsInteresting} />
             
       </Card.Body>

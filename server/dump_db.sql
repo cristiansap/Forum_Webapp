@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS USER (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
-    admin INTEGER NOT NULL CHECK (admin IN (0, 1)),
     hash TEXT NOT NULL,
     salt TEXT NOT NULL,
     secret TEXT    -- optional (there must be only for admin users)
@@ -42,13 +41,13 @@ CREATE TABLE INTERESTING (
 );
 
 -- The user ID is automatically inserted and incremented properly (thanks to autoincrement)
-INSERT INTO USER (email, name, admin, hash, salt, secret)
+INSERT INTO USER (email, name, hash, salt, secret)
 VALUES
-('u1@p.it','Cristian', 1, '6f8d5b84d60b6753c68ee195393c7b6b6939b23d579534daf9df73f74f16d74b','b99ab9a3a4861cfc','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
-('u2@p.it','Sofia', 1, '2893125de9d5723659c1f12f2e4467cf61d6e982c92a7f51d3c29e633f1f72d5','55421019646bef3f','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
-('u3@p.it','Anna', 0, '3757d2da3fd2f0a0148871b485d73c489c4a2d3267e30e3c160b985b28f32285','c188381ec1c96e9a',NULL),
-('u4@p.it','Marika', 0, '99b25e123ae69d781c13ac6db05144585c8e34631a4b8b5dde47e81e56e7f87c','43f6278c2eb21fcf',NULL),
-('u5@p.it','Fabio', 0, 'ee9502ac5a0b3d99caabb28b8a3a4b60d3d389ac17f7a79e5c0a84b2604f459d','21a948f946a7aec6',NULL);
+('u1@p.it','Cristian','6f8d5b84d60b6753c68ee195393c7b6b6939b23d579534daf9df73f74f16d74b','b99ab9a3a4861cfc','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
+('u2@p.it','Sofia','2893125de9d5723659c1f12f2e4467cf61d6e982c92a7f51d3c29e633f1f72d5','55421019646bef3f','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
+('u3@p.it','Anna','3757d2da3fd2f0a0148871b485d73c489c4a2d3267e30e3c160b985b28f32285','c188381ec1c96e9a',NULL),
+('u4@p.it','Marika','99b25e123ae69d781c13ac6db05144585c8e34631a4b8b5dde47e81e56e7f87c','43f6278c2eb21fcf',NULL),
+('u5@p.it','Fabio','ee9502ac5a0b3d99caabb28b8a3a4b60d3d389ac17f7a79e5c0a84b2604f459d','21a948f946a7aec6',NULL);
 
 
 ---- POSTS INSERTION ----
@@ -57,7 +56,10 @@ VALUES
 INSERT INTO POST (title, user_ID, text, max_comments) VALUES
 ('Welcome to the Forum', 1, 'This is the first official post from the admin team.', 5),
 ('Security Tips', 1,
-'Some basic tips to keep your accounts safe online.\n1. Use strong passwords.\n2. Enable two-factor authentication.\n3. Avoid clicking suspicious links.',
+'Some basic tips to keep your accounts safe online.
+1. Use strong passwords.
+2. Enable two-factor authentication.
+3. Avoid clicking suspicious links.',
 4);                       -- example of multiline text for a post
 
 
@@ -82,7 +84,8 @@ INSERT INTO POST (title, user_ID, text, max_comments) VALUES
 
 -- Comments on post ID 1 (Cristian, max 5)
 INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Great start!\n\nI hope this forum grows quickly.', 2, 1),       -- example of multiline text for a comment
+('Great start!
+I hope this forum grows quickly.', 2, 1),       -- example of multiline text for a comment
 ('Looking forward to more updates.', NULL, 1),
 ('Nice job.', 3, 1),
 ('Well done!', 4, 1),

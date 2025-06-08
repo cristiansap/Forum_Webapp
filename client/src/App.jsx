@@ -20,7 +20,7 @@ function App() {
 
 
   const [user, setUser] = useState(null);      // logged-in user
-  const [loggedInAsAdmin, setLoggedInAsAdmin] = useState(false);  // keep track if the user is currently logged-in
+  const [loggedInAsAdmin, setLoggedInAsAdmin] = useState(false);  // keep track whether the currently logged-in user is an admin
 
 
   const showSuccess = (msg) => {
@@ -54,9 +54,7 @@ function App() {
       msg = 'An unexpected error occurred. Please try again.';
     }
 
-    console.log('Full error object:', err);
-
-    // Show a simple error to the user
+    // Show the error to the user
     showError(msg);
   };
 
@@ -68,6 +66,9 @@ function App() {
         // here you have the user info, if already logged-in
         const user = await API.getUserInfo();
         setUser(user);
+        // check if the user is authenticated as admin and set the state
+        if (user.isTotp)
+          setLoggedInAsAdmin(true);
       } catch (err) {
         // NO need to do anything: user is simply not yet authenticated
       }
@@ -94,8 +95,6 @@ function App() {
     try {
       const user = await API.logIn(credentials);
       setUser(user);
-      navigate('/');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       // error is handled and visualized in the login form, so do not manage error, but throw it
       throw err;
@@ -109,7 +108,6 @@ function App() {
     // Clean up all React states related to authentication
     setUser(null);
     setLoggedInAsAdmin(false);
-
     
     // Refresh posts and navigate to the main route
     setDirty(true);
@@ -175,8 +173,8 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<GenericLayout user={user} logout={handleLogout} handleReturnHome={handleReturnHome} />}>
-        <Route index element={<BodyLayout user={user} posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty}
+      <Route path="/" element={<GenericLayout user={user} logout={handleLogout} handleReturnHome={handleReturnHome} loggedInAsAdmin={loggedInAsAdmin} />}>
+        <Route index element={<BodyLayout user={user} loggedInAsAdmin={loggedInAsAdmin} posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty}
                                 deletePost={deletePost} deleteComment={deleteComment} message={message} setMessage={setMessage} 
                                 showError={showError} showSuccess={showSuccess} handleErrors={handleErrors} />} />
         <Route path="add-post" element={<AddPostLayout createPost={createPost} handleReturnHome={handleReturnHome} />} />
@@ -184,7 +182,7 @@ function App() {
         <Route path="edit-comment/:id" element={<EditCommentLayout editComment={editComment} setMessage={setMessage} 
                                                   showError={showError} showSuccess={showSuccess} handleReturnHome={handleReturnHome} />} />
         <Route path="*" element={<NotFoundLayout />} />
-        <Route path="/login" element={<LoginLayout login={handleLogin} />} />
+        <Route path="/login" element={<LoginLayout login={handleLogin} user={user} loggedInAsAdmin={loggedInAsAdmin} setLoggedInAsAdmin={setLoggedInAsAdmin} handleReturnHome={handleReturnHome} />} />
       </Route>
     </Routes>
   )

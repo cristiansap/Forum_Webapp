@@ -6,7 +6,7 @@
 const db = require('./db');
 
 
-// Convert a DB record into an object in API format (from snake_case to camelCase)
+// Convert a DB record into an object in API format
 // Note that JSON object requires camelCase as per the API specifications we defined.
 function convertPostFromDbRecord(record) {
   return {
@@ -105,7 +105,7 @@ exports.createPost = (userId, post) => {
  */
 exports.deletePost = (postId) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM POST WHERE id = ?';    // there is no need to have 'user_ID = ?', because I've already checked the author in app.delete('/api/posts/:id') inside index.js
+        const sql = 'DELETE FROM POST WHERE id = ?';    // there is no need to have 'user_ID = ?', because I've already checked for the user in app.delete('/api/posts/:id') inside index.js
         db.run(sql, [postId], function (err) {
             if (err) {
                 reject(err);

@@ -1,12 +1,12 @@
 import { Row, Col, Button, Container, Spinner, Alert } from 'react-bootstrap';
-import { Outlet, Link, useParams, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import { CustomNavbar } from './CustomNavbar';
 import { PostCard } from './PostCard'
 import { CommentForm } from './CommentForm'
 import { PostForm } from './PostForm'
-import { LoginForm } from './Auth';
+import { LoginForm, TotpForm } from './Auth';
 
 import API from '../API.js';
 
@@ -23,10 +23,33 @@ function NotFoundLayout() {
 }
 
 function LoginLayout(props) {
+
+    if (props.user) {
+        if (props.user.canDoTotp) {
+            if (props.loggedInAsAdmin) {
+                return <Navigate replace to='/' />; // admin redirected to home page
+                                                    // Using 'replace' to avoid adding a new entry to the browser history,
+                                                    // so that the user cannot navigate back to the previous page.
+            } else {
+                return <TotpLayout totpSuccessful={() => props.setLoggedInAsAdmin(true)} />;
+            }
+        } else {
+            return <Navigate replace to='/' />; // authenticated user that cannot be admin is redirected to home page
+                                                // Using 'replace' to avoid adding a new entry to the browser history,
+                                                // so that the user cannot navigate back to the previous page.
+        }
+    } else {
+        return (
+            <LoginForm login={props.login} user={props.user} handleReturnHome={props.handleReturnHome} /> 
+        );
+    }
+}
+
+function TotpLayout(props) {
     return (
         <Row>
             <Col>
-                <LoginForm login={props.login} />
+                <TotpForm totpSuccessful={props.totpSuccessful} />
             </Col>
         </Row>
     );
@@ -48,20 +71,23 @@ function SpinnerLoadingLayout(props) {
 
 function GenericLayout(props) {
     return (
-        <>
-            <Row>
-                <Col xs={12}>
-                    <CustomNavbar user={props.user} logout={props.logout} handleReturnHome={props.handleReturnHome} />
-                </Col>
-            </Row>
+        <div className="d-flex flex-column min-vh-100">
+            <header>
+                <Row>
+                    <Col xs={12}>
+                        <CustomNavbar user={props.user} logout={props.logout} handleReturnHome={props.handleReturnHome} loggedInAsAdmin={props.loggedInAsAdmin} />
+                    </Col>
+                </Row>
+            </header>
 
+            <main className="flex-grow-1">  {/* flex-grow-1 allows the component to expand and fill all the remaining vertical space. */}
+                <Outlet />
+            </main>
 
-            <Outlet />
-
-            <footer className="blockquote-footer ms-2 my-2">
+            <footer className="blockquote-footer text-center">
                 &copy; Royal Forum · by Cristian Sapia<br />
             </footer>
-        </>
+        </div>
     );
 }
 
@@ -73,7 +99,7 @@ function BodyLayout(props) {
             <div>
                 {props.posts
                     .map(post => (
-                        <PostCard key={post.id} user={props.user} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment}
+                        <PostCard key={post.id} user={props.user} loggedInAsAdmin={props.loggedInAsAdmin} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment}
                             showError={props.showError} showSuccess={props.showSuccess} handleErrors={props.handleErrors} />
                     ))
                 }

@@ -187,6 +187,22 @@ const markOrUnmarkCommentAsInteresting = async (commentId, interesting) => {
 /*** Authentication functions ***/
 
 /**
+ * This function wants the TOTP code.
+ * It executes the 2FA.
+ */
+const totpVerify = async (totpCode) => {
+  return getJson(fetch(SERVER_URL + 'login-totp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',  // authentication cookie must be forwarded
+    body: JSON.stringify({ code: totpCode }),
+  })
+  )
+};
+
+/**
  * This function wants username and password inside a "credentials" object.
  * It executes the log-in.
  */
@@ -225,5 +241,5 @@ const logOut = async () => {
 }
 
 
-const API = { getPosts, createPost, deletePost, getCommentsForPost, addCommentToPost, getCommentById, updateComment, deleteComment, markOrUnmarkCommentAsInteresting, logIn, getUserInfo, logOut };
+const API = { getPosts, createPost, deletePost, getCommentsForPost, addCommentToPost, getCommentById, updateComment, deleteComment, markOrUnmarkCommentAsInteresting, logIn, getUserInfo, logOut, totpVerify };
 export default API;

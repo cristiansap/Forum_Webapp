@@ -32,6 +32,9 @@ app.use(cors(corsOptions));
 const passport = require('passport');              // authentication middleware
 const LocalStrategy = require('passport-local');   // authentication strategy (username and password)
 
+const base32 = require('thirty-two');
+const TotpStrategy = require('passport-totp').Strategy;   // totp
+
 
 /** Set up authentication strategy to search in the DB a user with a matching password.
  * The user object will contain other information extracted by the method userDao.getUser.
@@ -81,6 +84,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
+passport.use(new TotpStrategy(
+  function (user, done) {
+    return done(null, base32.decode(user.secret), 30);  // 30 = period of key validity
+  })
+);
+
+
 /** Defining authentication verification middleware **/
 const isLoggedIn = (req, res, next) => {
   if (req.isAuthenticated()) {
@@ -89,6 +99,16 @@ const isLoggedIn = (req, res, next) => {
   return res.status(401).json({ error: 'Not authorized' });
 }
 
+/** Two-Factor Authentication (2FA) verification middleware.
+ * This middleware is intended to protect API endpoints that are strictly reserved for administrators.
+ * In this project, all admin-level operations are also accessible to regular users if they are the resource owners.
+ * Therefore, instead of enforcing 2FA via this middleware, I perform proper authorization checks directly within the route handlers.
+ */
+function isTotp(req, res, next) {
+  if (req.session.method === 'totp')
+    return next();
+  return res.status(401).json({ error: 'Missing TOTP authentication' });
+}
 
 /*** Utility Functions ***/
 
@@ -167,6 +187,7 @@ app.delete('/api/posts/:id', isLoggedIn,
     }
 
     const postId = req.params.id;
+    const isAdmin = (req.session.method === 'totp');
 
     try {
       const post = await postDao.getPostById(postId);
@@ -176,8 +197,8 @@ app.delete('/api/posts/:id', isLoggedIn,
       }
 
       // Server-side check:
-      // only the owner or an admin can delete the post !!!
-      if (post.userId !== req.user.id) {      // TODO: handle the fact that whatever admin can delete the post, so add: && req.user.role !== 'admin'
+      // only the owner or an admin can delete the post
+      if (post.userId !== req.user.id && !isAdmin) {
         return res.status(403).json({ error: "Not authorized to delete this post." });
       }
 
@@ -271,7 +292,6 @@ app.get('/api/comments/:id',
   }
 );
 
-
 // 7. Update an existing comment, by providing the new text.
 // PUT /api/comments/<id>
 // This route allows to modify a comment, specifiying its id and the new text.
@@ -288,6 +308,7 @@ app.put('/api/comments/:id', isLoggedIn,
     }
 
     const commentId = Number(req.params.id);
+    const isAdmin = (req.session.method === 'totp');
 
     try {
       const oldComment = await commentDao.getCommentById(req.user.id, commentId);
@@ -295,7 +316,9 @@ app.put('/api/comments/:id', isLoggedIn,
         return res.status(404).json({ error: 'Comment not found.' });
       }
 
-      if (oldComment.userId !== req.user.id) {    // TODO: handle the fact that whatever admin can update the comment, so add: && req.user.role !== 'admin'
+      // Server-side check:
+      // Only the owner or an admin can edit the comment
+      if (oldComment.userId !== req.user.id && !isAdmin) {
         return res.status(403).json({ error: 'You are not authorized to edit this comment.' });
       }
 
@@ -331,6 +354,7 @@ app.delete('/api/comments/:id', isLoggedIn,
     }
 
     const commentId = req.params.id;
+    const isAdmin = (req.session.method === 'totp');
 
     try {
       const comment = await commentDao.getCommentById(req.user.id, commentId);
@@ -339,8 +363,9 @@ app.delete('/api/comments/:id', isLoggedIn,
         return res.status(404).json({ error: "Comment not found." });
       }
 
+      // Server-side check:
       // Only the owner or an admin can delete the comment
-      if (comment.userId !== req.user.id) {   // TODO: handle the fact that whatever admin can update the comment, so add: && req.user.role !== 'admin'
+      if (comment.userId !== req.user.id && !isAdmin) {
         return res.status(403).json({ error: "Not authorized to delete this comment." });
       }
 
@@ -395,6 +420,11 @@ app.put('/api/comments/:id/interesting', isLoggedIn,
 
 /*** Users APIs ***/
 
+function clientUserInfo(req) {
+  const user = req.user;
+  return { id: user.id, username: user.username, name: user.name, canDoTotp: user.secret ? true : false, isTotp: req.session.method === 'totp' };
+}
+
 // POST /api/sessions 
 // This route is used for performing login.
 app.post('/api/sessions', function (req, res, next) {
@@ -412,16 +442,26 @@ app.post('/api/sessions', function (req, res, next) {
 
       // req.user contains the authenticated user, we send all the user info back
       // this is coming from userDao.getUser() in LocalStrategy Verify function
-      return res.json(req.user);
+      return res.json(clientUserInfo(req));
     });
   })(req, res, next);
 });
+
+// POST /api/login-totp 
+// This route is used for performing 2FA (2 Factor Authentication).
+app.post('/api/login-totp', isLoggedIn,
+  passport.authenticate('totp'),   // passport expect the totp value to be in: body.code
+  function (req, res) {
+    req.session.method = 'totp';
+    res.json({ otp: 'authorized' });
+  }
+);
 
 // GET /api/sessions/current
 // This route checks whether the user is logged in or not.
 app.get('/api/sessions/current', (req, res) => {
   if (req.isAuthenticated()) {
-    res.status(200).json(req.user);
+    res.status(200).json(clientUserInfo(req));
   }
   else
     res.status(401).json({ error: 'Not authenticated' });

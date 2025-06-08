@@ -80,11 +80,11 @@
   cursor: pointer;
 }
 
-.edit-comment-btn:active {
+.edit-comment-button:active {
   color: #ffc107 !important;   /* same color as Bootstrap warning */
 }
 
-.edit-comment-btn:active i {
+.edit-comment-button:active i {
   color: white !important;
 }
 
@@ -100,6 +100,7 @@
 .tooltip-text-star-button {
   visibility: hidden;  /* tooltip hidden by default */
   background-color: #333;
+  opacity: 0.7;
   color: #fff;
   text-align: center;
   padding: 4px 8px;
@@ -110,6 +111,10 @@
   transform: none;
   white-space: nowrap;  /* content all in one line */
   font-size: 0.75rem;
+}
+
+.tooltip-text-star-button {
+  bottom: 85% !important;  /* above the button */
 }
 
 .tooltip-text-star-button {
@@ -154,23 +159,23 @@
   visibility: visible;
 }
 
-.delete-post-btn:hover, .delete-comment-btn:hover {
+.delete-post-button:hover, .delete-comment-button:hover {
   background-color: #dc3545; /* same color as Bootstrap danger */
   color: white;
 }
 
-.delete-post-btn:disabled, .delete-comment-btn:disabled {
+.delete-post-button:disabled, .delete-comment-button:disabled {
   background-color: #dc3545;
   color: white;
   opacity: 0.6;
 }
 
-.edit-comment-btn:hover {
+.edit-comment-button:hover {
   background-color: #ffc107; /* same color as Bootstrap warning */
   color: white;
 }
 
-.edit-comment-btn:disabled {
+.edit-comment-button:disabled {
   background-color: #ffc107;
   color: white;
   opacity: 0.6;
@@ -180,7 +185,7 @@
 .multiline-text {
   white-space: pre-wrap !important;     /* tell the browser to respect newline characters (otherwise ignored) */
   word-break: break-word !important;    /* break too long words */
-  overflow-wrap: break-word !important; /* fallback */
+  overflow-wrap: break-word !important; /* fallback compatibility with all browsers */
 }
 
 .limited-width-text {
