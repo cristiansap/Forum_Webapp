@@ -93,27 +93,11 @@
   display: inline-block;  /* ensures the wrapper only takes up as much space as the button needs */
 }
 
+.tooltip-text-add-comment-button,
+.tooltip-text-delete-post-button,
+.tooltip-text-edit-comment-button,
+.tooltip-text-delete-comment-button,
 .tooltip-text-star-button {
-  visibility: hidden;  /* tooltip hidden by default */
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 4px 8px;
-  border-radius: 4px;
-  position: absolute;
-  bottom: 94%;  /* above the button */
-  left: -10rem;
-  transform: none;
-  white-space: nowrap;  /* content all in one line */
-  font-size: 0.75rem;
-}
-
-/* Show tooltip on mouseover */
-.tooltip-wrapper:hover .tooltip-text-star-button {
-  visibility: visible;
-}
-
-.tooltip-text-add-comment-button {
   visibility: hidden;  /* tooltip hidden by default */
   background-color: #333;
   color: #fff;
@@ -128,7 +112,45 @@
   font-size: 0.75rem;
 }
 
+.tooltip-text-star-button {
+  bottom: 94%;
+  left: -8.7rem;
+}
+
+/* Show tooltip on mouseover */
+.tooltip-wrapper:hover .tooltip-text-star-button {
+  visibility: visible;
+}
+
+
 .tooltip-wrapper:hover .tooltip-text-add-comment-button {
+  visibility: visible;
+}
+
+.tooltip-text-delete-post-button {
+  bottom: 120%;  /* above the button */
+  left: -1.9rem;
+}
+
+.tooltip-wrapper:hover .tooltip-text-delete-post-button {
+  visibility: visible;
+}
+
+.tooltip-text-edit-comment-button {
+  bottom: 120%;
+  left: -6.3rem;
+}
+
+.tooltip-wrapper:hover .tooltip-text-edit-comment-button {
+  visibility: visible;
+}
+
+.tooltip-text-delete-comment-button {
+  bottom: 120%;
+  left: 0.5rem;
+}
+
+.tooltip-wrapper:hover .tooltip-text-delete-comment-button {
   visibility: visible;
 }
 

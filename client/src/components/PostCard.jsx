@@ -41,16 +41,21 @@ function CommentsCollapse(props) {
             props.comments.map((comment) => {
               // Convert the UTC timestamp to the client's local time zone using the browser settings, and format it to display it properly
               const dayjsTimestamp = dayjs.utc(comment.timestamp).tz(dayjs.tz.guess()).format('YYYY-MM-DD HH:mm:ss');
+              const notAuthorized = !props.user || props.user.id !== comment.userId;
               return (
                 <ListGroup.Item key={comment.id}>
                   <div className="d-flex align-items-start justify-content-between">
 
                     <div className="d-flex flex-column align-items-center me-3">
-                      <Button variant="link" className="p-0 interesting-button tooltip-wrapper" disabled={!props.user}>
-                        <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} 
-                          onClick={() => props.markOrUnmarkCommentAsInteresting(comment.id, !comment.isInterestingForCurrentUser)} />
-                        <span className="tooltip-text-star-button">Mark comment as interesting</span>
-                      </Button>
+                      <div className="tooltip-wrapper">
+                        <Button variant="link" className="p-0 interesting-button" disabled={!props.user}>
+                          <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`}
+                            onClick={() => props.markOrUnmarkCommentAsInteresting(comment.id, !comment.isInterestingForCurrentUser)} />
+                        </Button>
+                        <span className="tooltip-text-star-button">
+                          {props.user ? "Mark comment as interesting" : "You're not authenticated."}
+                        </span>
+                      </div>
                       {props.user ? <small className="text-muted">{comment.countInterestingMarks}</small> : null}
                     </div>
 
@@ -62,19 +67,38 @@ function CommentsCollapse(props) {
                     </div>
 
                     <div className="ms-2">
-                      <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
-                        onClick={() => navigate(`/edit-comment/${comment.id}`)}
-                        disabled={!props.user || props.user.id !== comment.userId}>
-                        <i className="bi bi-pencil-fill" />
-                      </Button>
 
-                      <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
-                        onClick={() => props.deleteComment(comment.id)}
-                        disabled={!props.user || props.user.id !== comment.userId}>
-                        <i className="bi bi-trash-fill" />
-                      </Button>
+                      <div className="tooltip-wrapper">
+                        <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
+                          onClick={() => navigate(`/edit-comment/${comment.id}`)}
+                          disabled={notAuthorized}>
+                          <i className="bi bi-pencil-fill" />
+                        </Button>
+                        {notAuthorized ? (
+                          <span className="tooltip-text-edit-comment-button">
+                            {props.user ? "You're not authorized." : "You're not authenticated."}
+                          </span>
+                        ) : (
+                          <></>
+                        )}
+                      </div>
+
+                      <div className="tooltip-wrapper">
+                        <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
+                          onClick={() => props.deleteComment(comment.id)}
+                          disabled={notAuthorized}>
+                          <i className="bi bi-trash-fill" />
+                        </Button>
+                      {notAuthorized ? (
+                        <span className="tooltip-text-delete-comment-button">
+                          {props.user ? "You're not authorized." : "You're not authenticated."}
+                        </span>
+                      ) : (
+                        <></>
+                      )}
+                      </div>
+
                     </div>
-
                   </div>
                 </ListGroup.Item>
               );
@@ -170,7 +194,7 @@ function PostCard(props) {
             {showComments ? 'Hide Comments' : 'Show Comments'}
           </Button>
 
-          { props.post.maxComments !== null && props.post.commentCount >= props.post.maxComments ? (
+          {props.post.maxComments !== null && props.post.commentCount >= props.post.maxComments ? (
             <div className="tooltip-wrapper">
               <Button size="sm" className="add-comment-button" disabled >
                 <i className="bi bi-chat-square-text-fill me-1" />
@@ -189,12 +213,23 @@ function PostCard(props) {
             </Link>
           )}
 
-          <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
+          
+          <div className="tooltip-wrapper ms-auto">
+            <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
               onClick={() => props.deletePost(props.post.id)}
               disabled={!props.user || props.user.id !== props.post.userId}>
-            <i className="bi bi-trash-fill me-1" />
-            Delete Post
-          </Button>
+              <i className="bi bi-trash-fill me-1" />
+              Delete Post
+            </Button>
+            {!props.user || props.user.id !== props.post.userId ? (
+              <span className="tooltip-text-delete-post-button">
+                {props.user ? "You're not authorized." : "You're not authenticated."}
+              </span>
+            ) : (
+              <></>
+            )}
+          </div>
+
         </div>
 
         <CommentsCollapse user={props.user} comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} 
