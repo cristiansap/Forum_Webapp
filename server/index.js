@@ -15,7 +15,7 @@ const userDao = require('./dao-users');         // module for accessing the user
 /* Init express and set-up the middlewares */
 const app = express();
 app.use(morgan('dev'));
-app.use(express.json()); // To automatically decode incoming json
+app.use(express.json()); // to automatically decode incoming json
 
 
 /* Set up and enable Cross-Origin Resource Sharing (CORS) */
@@ -36,13 +36,15 @@ const LocalStrategy = require('passport-local');   // authentication strategy (u
 /** Set up authentication strategy to search in the DB a user with a matching password.
  * The user object will contain other information extracted by the method userDao.getUser.
  **/
-passport.use(new LocalStrategy(async function verify(username, password, callback) {
-  const user = await userDao.getUser(username, password)
-  if (!user)
-    return callback(null, false, 'Incorrect username or password');
+passport.use(new LocalStrategy(
+  async function verify(username, password, callback) {
+    const user = await userDao.getUser(username, password)
+    if (!user)
+      return callback(null, false, 'Incorrect username or password');
 
-  return callback(null, user); // NOTE: user info in the session (all fields returned by userDao.getUser)
-}));
+    return callback(null, user); // NOTE: user info in the session (all fields returned by userDao.getUser)
+  }
+));
 
 // Serializing in the session the user object given from LocalStrategy(verify)
 passport.serializeUser(function (user, callback) {
@@ -51,11 +53,17 @@ passport.serializeUser(function (user, callback) {
 
 // Starting from the data in the session, we extract the current (logged-in) user
 passport.deserializeUser(function (user, callback) {
-  return callback(null, user); // this will be available in req.user
+  /* Even though users cannot currently be deleted, fetching the user from the database
+   * ensures the session remains consistent and up-to-date in case of potential future changes
+   * (e.g., account status updates, admin actions, etc.).
+   */
+  return userDao.getUserById(user.id)
+          .then(user => callback(null, user))   // this will be available in req.user
+          .catch(err => callback(err, null));
 });
 
 
-/** Creating the session */
+/** Creating the session **/
 const session = require('express-session');
 
 app.use(session({
@@ -67,7 +75,10 @@ app.use(session({
     secure: false       // secure: false (for the purposes of this course HTTPS is not used, but in a real-world scenario just set this option to "true")
   },
 }));
-app.use(passport.authenticate('session'));
+
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 /** Defining authentication verification middleware **/
@@ -110,10 +121,10 @@ app.get('/api/posts',
 // 2. Create a new post, by providing all relevant information.
 // POST /api/posts
 // This route adds a new post to the forum.
-app.post('/api/posts',    // TODO: include the middleware isLoggedIn
+app.post('/api/posts', isLoggedIn, 
   [
-    check('title').isLength({ min: 1 }),
-    check('text').isLength({ min: 1 }).withMessage('Text cannot be empty'),
+    check('title').trim().notEmpty().withMessage('Title cannot be empty.'),
+    check('text').notEmpty().withMessage('Text cannot be empty.'),    // cannot perform .trim() otherwise newlines are erased
     check('maxComments').optional({ checkFalsy: true }).isInt({ min: 0 }).toInt()   // check if present and not falsy (e.g. null, ""), and maxComments must represent an integer >= 0, then it is parsed to Int
   ],
   async (req, res) => {
@@ -126,13 +137,10 @@ app.post('/api/posts',    // TODO: include the middleware isLoggedIn
       title: req.body.title,
       text: req.body.text,
       maxComments: req.body.maxComments,
-      authorId: 1   // TODO: DELETE 1 and WRITE 'req.user.id' WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
-      // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
     };
 
     try {
-      console.log("New post request:", req.body);   // TODO: delete this debug console log
-      const createdPost = await postDao.createPost(post);   // TODO: pass 'req.user.id' as first parameter 
+      const createdPost = await postDao.createPost(req.user.id, post);
       res.json(createdPost);
     } catch (err) {
       if (err.code === 'DUPLICATE_TITLE') {
@@ -148,7 +156,7 @@ app.post('/api/posts',    // TODO: include the middleware isLoggedIn
 // 3. Delete an existing post, given its id.
 // DELETE /api/posts/<id>
 // Given a post id, this route deletes the associated post from the forum.
-app.delete('/api/posts/:id',        // TODO: include the middleware isLoggedIn
+app.delete('/api/posts/:id', isLoggedIn,
   [ 
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
   ],
@@ -167,15 +175,13 @@ app.delete('/api/posts/:id',        // TODO: include the middleware isLoggedIn
         return res.status(404).json({ error: "Post not found." });
       }
 
-      // Only the owner or an admin are allowed to delete the post
-
-      /* TODO: uncomment this part once authentication has been implemented !!!
-      if (post.authorId !== req.user.id && req.user.role !== 'admin') {
+      // Server-side check:
+      // only the owner or an admin can delete the post !!!
+      if (post.userId !== req.user.id) {      // TODO: handle the fact that whatever admin can delete the post, so add: && req.user.role !== 'admin'
         return res.status(403).json({ error: "Not authorized to delete this post." });
       }
-      */
 
-      const numChanges = await postDao.deletePost(req.params.id);   // TODO: add 'req.user.id' as first parameter when calling deletePost()
+      const numChanges = await postDao.deletePost(req.params.id);
       if (numChanges === 0) {
         res.status(404).json({ error: "Post not deleted." });
       } else {
@@ -199,7 +205,8 @@ app.get('/api/posts/:id/comments',
   ],
   async (req, res) => {
     try {
-      const comments = await commentDao.getCommentsForPost(req.params.id);   // TODO: add 'req.user.id' as first parameter of getCommentsForPost()
+      const userId = req.user ? req.user.id : null;   // if there is no authenticated user, userId = null
+      const comments = await commentDao.getCommentsForPost(userId, req.params.id);
       res.json(comments);
     } catch (err) {
       console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
@@ -211,10 +218,10 @@ app.get('/api/posts/:id/comments',
 // 5. Create a new comment related to a specific post, by providing all relevant information.
 // POST /api/posts/<id>/comments
 // This route adds a new comment to a specific post of the forum.
-app.post('/api/posts/:id/comments', 
+app.post('/api/posts/:id/comments',
   [
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
-    check('text').isLength({ min: 1 }).withMessage('Text cannot be empty'),
+    check('text').notEmpty().withMessage('Text cannot be empty.'),  // cannot perform .trim() otherwise newlines are erased
   ],
   
   async (req, res) => {
@@ -224,14 +231,15 @@ app.post('/api/posts/:id/comments',
       return res.status(422).json(errors.errors); // error message is sent back as a json with the error info
     }
 
+    const userId = req.user ? req.user.id : null;   // if there is no authenticated user, userId = null
+
     const comment = {
       text: req.body.text,
-      authorId: 1   // TODO: DELETE 1 and WRITE 'req.user.id' WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
-      // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
+      userId: userId
     };
 
     try {
-      const addedComment = await commentDao.addCommentToPost(comment, req.params.id);  // TODO: pass 'req.user.id' as first parameter 
+      const addedComment = await commentDao.addCommentToPost(comment, req.params.id);
       res.json(addedComment);
     } catch (err) {
       console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
@@ -242,13 +250,15 @@ app.post('/api/posts/:id/comments',
 // 6. Retrieve an existing comment given its id.
 // GET /api/comments/<id>
 // Given a comment id, this route retrieves the corresponding comment.
-app.get('/api/comments/:id',      // TODO: include the middleware isLoggedIn
+app.get('/api/comments/:id',
   [
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
   ],
   async (req, res) => {
     try {
-      const comment = await commentDao.getCommentById(req.params.id);  // TODO: add 'req.user.id' as first parameter of getCommentById()
+      const userId = req.user ? req.user.id : null;   // if there is no authenticated user, userId = null
+
+      const comment = await commentDao.getCommentById(userId, req.params.id);
       if (comment.error) {
         res.status(404).json(comment);  // comment not found
       } else {
@@ -265,10 +275,10 @@ app.get('/api/comments/:id',      // TODO: include the middleware isLoggedIn
 // 7. Update an existing comment, by providing the new text.
 // PUT /api/comments/<id>
 // This route allows to modify a comment, specifiying its id and the new text.
-app.put('/api/comments/:id',      // TODO: include the middleware isLoggedIn
+app.put('/api/comments/:id', isLoggedIn,
   [
     check('id').isInt({ min: 1 }).toInt(),    // check: the id must represent a positive integer, then it is parsed to Int
-    check('text').isLength({ min: 1 }).withMessage('Text cannot be empty'),
+    check('text').notEmpty().withMessage('Text cannot be empty.'),  // cannot perform .trim() otherwise newlines are erased
   ],
 
   async (req, res) => {
@@ -280,19 +290,18 @@ app.put('/api/comments/:id',      // TODO: include the middleware isLoggedIn
     const commentId = Number(req.params.id);
 
     try {
-      const oldComment = await commentDao.getCommentById(commentId);
+      const oldComment = await commentDao.getCommentById(req.user.id, commentId);
       if (!oldComment || oldComment.error) {
         return res.status(404).json({ error: 'Comment not found.' });
       }
 
-      /* TODO: uncomment this 'if statement' once authN is implemented !!!
-      if (oldComment.authorId !== req.user.id && req.user.role !== 'admin') {
+      if (oldComment.userId !== req.user.id) {    // TODO: handle the fact that whatever admin can update the comment, so add: && req.user.role !== 'admin'
         return res.status(403).json({ error: 'You are not authorized to edit this comment.' });
       }
-      */
 
       const updatedComment = {
         text: req.body.text,
+        userId: req.user.id
       };
 
       const result = await commentDao.updateComment(commentId, updatedComment);
@@ -311,7 +320,7 @@ app.put('/api/comments/:id',      // TODO: include the middleware isLoggedIn
 // 8. Delete an existing comment, given its id.
 // DELETE /api/comments/<id>
 // Given a comment id, this route deletes the associated comment from the forum.
-app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
+app.delete('/api/comments/:id', isLoggedIn,
   [ 
     check('id').isInt({ min: 1 }).toInt()
   ],
@@ -324,19 +333,16 @@ app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
     const commentId = req.params.id;
 
     try {
-      const comment = await commentDao.getCommentById(commentId);
+      const comment = await commentDao.getCommentById(req.user.id, commentId);
 
       if (!comment || comment.error) {
         return res.status(404).json({ error: "Comment not found." });
       }
 
-      // Only the owner or an admin are allowed to delete the comment
-
-      /* TODO: uncomment this part once authentication has been implemented !!!
-      if (comment.authorId !== req.user.id && req.user.role !== 'admin') {
+      // Only the owner or an admin can delete the comment
+      if (comment.userId !== req.user.id) {   // TODO: handle the fact that whatever admin can update the comment, so add: && req.user.role !== 'admin'
         return res.status(403).json({ error: "Not authorized to delete this comment." });
       }
-      */
 
       const numChanges = await commentDao.deleteComment(commentId);
       if (numChanges === 0) {
@@ -354,7 +360,7 @@ app.delete('/api/comments/:id',       // TODO: include the middleware isLoggedIn
 // 9. Mark / unmark an existing comment as interesting / not interesting, given its id.
 // PUT /api/comments/<id>/interesting
 // Given a comment id, this route modifies the associated interesting flag.
-app.put('/api/comments/:id/interesting',    // TODO: include the middleware isLoggedIn
+app.put('/api/comments/:id/interesting', isLoggedIn,
   [
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
     check('interesting').isBoolean()
@@ -366,11 +372,10 @@ app.put('/api/comments/:id/interesting',    // TODO: include the middleware isLo
 
     const commentId = req.params.id;
     const interesting = req.body.interesting;
-    const userId = 1;   // TODO: DELETE 1 and WRITE 'req.user.id' WHEN AUTHN IS IMPLEMENTED, THIS WAS JUST FOR TESTING PURPOSES !!!
-      // authenticated user => DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
+    const userId = req.user.id;   // DO NOT USE the id coming from the client: the id MUST be retrieved from the session !!!
 
     try {
-      const comment = await commentDao.getCommentById(commentId);   // Server-side check: commentId must exist.
+      const comment = await commentDao.getCommentById(req.user.id, commentId);   // Server-side check: commentId must exist.
       if (comment.error)
         return res.status(404).json({ error: 'Comment not found.' });
 
@@ -386,6 +391,50 @@ app.put('/api/comments/:id/interesting',    // TODO: include the middleware isLo
     }
   }
 );
+
+
+/*** Users APIs ***/
+
+// POST /api/sessions 
+// This route is used for performing login.
+app.post('/api/sessions', function (req, res, next) {
+  passport.authenticate('local', (err, user, info) => {
+    if (err)
+      return next(err);
+    if (!user) {
+      // display wrong login messages
+      return res.status(401).json({ error: info });
+    }
+    // success -> perform the login and extablish a login session
+    req.login(user, (err) => {
+      if (err)
+        return next(err);
+
+      // req.user contains the authenticated user, we send all the user info back
+      // this is coming from userDao.getUser() in LocalStrategy Verify function
+      return res.json(req.user);
+    });
+  })(req, res, next);
+});
+
+// GET /api/sessions/current
+// This route checks whether the user is logged in or not.
+app.get('/api/sessions/current', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.status(200).json(req.user);
+  }
+  else
+    res.status(401).json({ error: 'Not authenticated' });
+});
+
+
+// DELETE /api/sessions/current
+// This route is used for logging out the current user.
+app.delete('/api/sessions/current', (req, res) => {
+  req.logout(() => {
+    res.status(200).json({});
+  });
+});
 
 
 

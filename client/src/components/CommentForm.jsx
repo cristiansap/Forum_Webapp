@@ -1,7 +1,5 @@
 import { Row, Col, Button, Form, Card, Container, Alert } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 
 function CommentForm(props) {
@@ -15,11 +13,11 @@ function CommentForm(props) {
         event.preventDefault();   // VERY IMPORTANT: preventDefault() avoid the default form submission and reloading of the page
 
         const newComment = {
-            "text": text,     // TODO: add the line: "authorId": props.user.id (where 'user' is a React state in App.jsx which needs to be sent through all the components)
+            "text": text,
         }
 
         // Perform data validation
-        if (newComment.text.length == 0) {
+        if (newComment.text.trim().length == 0) {
             setErrorMsg('Text of the comment seems to be empty.');
         } else {
             // Proceed to update the data
@@ -36,7 +34,6 @@ function CommentForm(props) {
 
     return (
         <>
-            {errorMsg? <Alert variant='danger' onClose={()=>setErrorMsg('')} dismissible>{errorMsg}</Alert> : false }
             <Container className="my-4">
                 <Row className="justify-content-center">
                     <Col md={8} lg={6}>
@@ -44,6 +41,7 @@ function CommentForm(props) {
                             <Card.Body>
                                 <h3 className="mb-4 text-center">Add Comment</h3>
                                 <Form onSubmit={handleSubmit}>
+                                    {errorMsg? <Alert variant='danger' onClose={()=>setErrorMsg('')} dismissible>{errorMsg}</Alert> : false }
 
                                     {/* Text of the comment */}
                                     <Form.Group className="mb-3">
@@ -57,9 +55,7 @@ function CommentForm(props) {
                                     </p>
 
                                     <div className="d-flex justify-content-between">
-                                        <Link to="/">
-                                            <Button variant="secondary">Cancel</Button>
-                                        </Link>
+                                        <Button variant="secondary" onClick={() => props.handleReturnHome()}>Cancel</Button>
                                         {props.commentToEdit ?
                                               <Button variant="warning" className="add-comment-button" type="submit">Confirm edit</Button>
                                             : <Button className="submit-comment-button" type="submit">Submit</Button>}

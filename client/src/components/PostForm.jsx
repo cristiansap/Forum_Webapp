@@ -1,5 +1,4 @@
 import { Button, Form, Card, Alert } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 import { useState } from 'react';
 
 
@@ -28,7 +27,7 @@ function PostForm(props) {
             setErrorMsg('Title of the post seems to be empty');
             return;
         }
-        if (newPost.text.length == 0) {
+        if (newPost.text.trim().length == 0) {
             setErrorMsg('Text of the post seems to be empty');
             return;
         }
@@ -73,9 +72,7 @@ function PostForm(props) {
                     </p>
 
                     <div className="d-flex justify-content-between">
-                        <Link to="/">
-                            <Button variant="secondary">Cancel</Button>
-                        </Link>
+                        <Button variant="secondary" onClick={() => props.handleReturnHome()}>Cancel</Button>
                         <Button className="submit-post-button" type="submit">Submit</Button>
                     </div>
                 </Form>

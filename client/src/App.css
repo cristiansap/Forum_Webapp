@@ -3,6 +3,17 @@
   background-color: #4169E1;
 }
 
+.home-button, .home-button:visited, .home-button:active, .home-button:focus {
+  color: #f8f9fa;
+  font-size: 1.3rem;
+  text-decoration: none;
+}
+
+.home-button:hover {
+  color: #fff;
+  opacity: 0.8;
+}
+
 .add-post-button:hover {
   background-color: #3a60d3;
 }
@@ -126,9 +137,21 @@
   color: white;
 }
 
+.delete-post-btn:disabled, .delete-comment-btn:disabled {
+  background-color: #dc3545;
+  color: white;
+  opacity: 0.6;
+}
+
 .edit-comment-btn:hover {
   background-color: #ffc107; /* same color as Bootstrap warning */
   color: white;
+}
+
+.edit-comment-btn:disabled {
+  background-color: #ffc107;
+  color: white;
+  opacity: 0.6;
 }
 
 /* Correctly handle '\n' characters and word-break in post and comment texts */

@@ -19,17 +19,24 @@ function App() {
   const [message, setMessage] = useState({ type: '', text: '' });       // used to display confirmation / error messages
 
 
-  const [user, setUser] = useState(undefined);  // logged user
+  const [user, setUser] = useState(null);      // logged-in user
+  const [loggedInAsAdmin, setLoggedInAsAdmin] = useState(false);  // keep track if the user is currently logged-in
 
 
   const showSuccess = (msg) => {
     setMessage({ type: 'success', text: msg });
-    setTimeout(() => setMessage({ type: '', text: '' }), 1800);   // Hide the alert message after 1.8s
+    setTimeout(() => setMessage({ type: '', text: '' }), 1600);   // Hide the alert message after 1.8s
   };
 
   const showError = (msg) => {
     setMessage({ type: 'danger', text: msg });
   };
+
+  const handleReturnHome = () => {
+    setMessage('');   // reset message state
+    navigate('/');    // navigate to the home
+  }
+
 
   // This function is for handling errors in a centralized manner
   const handleErrors = (err) => {
@@ -54,6 +61,22 @@ function App() {
   };
 
 
+  // This useEffect is for checking authentication when loading the app
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // here you have the user info, if already logged-in
+        const user = await API.getUserInfo();
+        setUser(user);
+      } catch (err) {
+        // NO need to do anything: user is simply not yet authenticated
+      }
+    };
+    checkAuth();
+  }, []);  // the useEffect callback is called only the first time the component is mounted
+
+
+  // This useEffect is for fetching forum posts when the 'dirty' flag is true
   useEffect(() => {
     if (dirty) {
       API.getPosts()
@@ -66,13 +89,37 @@ function App() {
   }, [dirty]);
 
 
+  // This function handles the login process.
+  const handleLogin = async (credentials) => {
+    try {
+      const user = await API.logIn(credentials);
+      setUser(user);
+      navigate('/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      // error is handled and visualized in the login form, so do not manage error, but throw it
+      throw err;
+    }
+  };
+
+  // This function handles the logout process.
+  const handleLogout = async () => {
+    await API.logOut();
+
+    // Clean up all React states related to authentication
+    setUser(null);
+    setLoggedInAsAdmin(false);
+
+    
+    // Refresh posts and navigate to the main route
+    setDirty(true);
+    navigate('/');
+  };
+
+
   /** Functions to perform operations on data **/
 
   function createPost(post) {
-    // Add information about the logged user (who is considered the author of the newly created post)
-    post.authorId = user?.id;
-    post.authorName = user?.name;
-
     return API.createPost(post)
       .then(() => {
         setDirty(true);  // trigger useEffect which reloads all posts
@@ -128,18 +175,17 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<GenericLayout />}>
-        <Route index element={<BodyLayout posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty}
+      <Route path="/" element={<GenericLayout user={user} logout={handleLogout} handleReturnHome={handleReturnHome} />}>
+        <Route index element={<BodyLayout user={user} posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty}
                                 deletePost={deletePost} deleteComment={deleteComment} message={message} setMessage={setMessage} 
                                 showError={showError} showSuccess={showSuccess} handleErrors={handleErrors} />} />
-        <Route path="add-post" element={<AddPostLayout createPost={createPost} />} />
-        <Route path="add-comment/:postId" element={<AddCommentLayout addCommentToPost={addCommentToPost} />} />
+        <Route path="add-post" element={<AddPostLayout createPost={createPost} handleReturnHome={handleReturnHome} />} />
+        <Route path="add-comment/:postId" element={<AddCommentLayout addCommentToPost={addCommentToPost} handleReturnHome={handleReturnHome} />} />
         <Route path="edit-comment/:id" element={<EditCommentLayout editComment={editComment} setMessage={setMessage} 
-                                                  showError={showError} showSuccess={showSuccess} />} />
+                                                  showError={showError} showSuccess={showSuccess} handleReturnHome={handleReturnHome} />} />
         <Route path="*" element={<NotFoundLayout />} />
+        <Route path="/login" element={<LoginLayout login={handleLogin} />} />
       </Route>
-        
-
     </Routes>
   )
 }

@@ -8,8 +8,8 @@ function convertCommentFromDbRecord(record) {
   return {
     id: record.id,
     text: record.text,
-    authorName: record.authorName,
-    authorId: record.authorId,
+    userName: record.userName,
+    userId: record.userId,
     timestamp: record.timestamp,
     postId: record.postId,
     isInterestingForCurrentUser: !!record.isInterestingForCurrentUser,  // cast to boolean (0 -> false ; 1 -> true)
@@ -20,38 +20,35 @@ function convertCommentFromDbRecord(record) {
 /**
  * This function retrieves the list of all comments given a specific post id.
  */
-exports.getCommentsForPost = (postId) => {      // TODO: add authorId as first parameter
+exports.getCommentsForPost = (userId, postId) => {
     return new Promise((resolve, reject) => {
-        /* TODO: uncomment this part when authN has been implemented
-        if (authorId) {
-            // Authenticated user -> include the info about whether interesting flag has been marked or not
-            const sql = `SELECT c.id, c.text, c.timestamp, u.id AS authorId, u.name AS authorName,
-                        COUNT(i.user_ID) AS countInterestingMarks,
-                        EXISTS (
-                            SELECT 1
-                            FROM INTERESTING i2
-                            WHERE i2.comment_ID = c.id AND i2.user_ID = ?
-                        ) AS isInterestingForCurrentUser
-                        FROM COMMENT c
-                        LEFT JOIN USER u ON c.user_ID = u.id
-                        LEFT JOIN INTERESTING i ON i.comment_ID = c.id
-                        WHERE c.post_ID = ?
-                        GROUP BY c.id
-                        ORDER BY c.timestamp DESC`;
-            const params = [authorId, postId];
-        }
-        */
-       /* TODO: then add an 'else' statement to enbody the query and params assignment below !!! */
-       // Anonymous user -> retrieve only anonymous comments (user_ID IS NULL)
-       const sql = `SELECT c.id, c.text, c.timestamp, u.id AS authorId, u.name AS authorName,
-                    COUNT(i.user_ID) AS countInterestingMarks, FALSE AS isInterestingForCurrentUser
+        let sql;
+        let params;
+
+        if (userId) {
+            // Authenticated user -> include also the info about whether interesting flag has been marked or not
+            sql = `SELECT c.id, c.text, c.timestamp, u.id AS userId, u.name AS userName,
+                    COUNT(i.user_ID) AS countInterestingMarks,
+                    EXISTS (
+                        SELECT 1
+                        FROM INTERESTING i2
+                        WHERE i2.comment_ID = c.id AND i2.user_ID = ?
+                    ) AS isInterestingForCurrentUser
                     FROM COMMENT c
                     LEFT JOIN USER u ON c.user_ID = u.id
                     LEFT JOIN INTERESTING i ON i.comment_ID = c.id
-                    WHERE c.post_ID = ? AND c.user_ID IS NULL
+                    WHERE c.post_ID = ?
                     GROUP BY c.id
                     ORDER BY c.timestamp DESC`;
-        const params = [postId];
+            params = [userId, postId];
+        } else {
+            // Anonymous user -> retrieve only anonymous comments (user_ID IS NULL)
+            sql = `SELECT c.id, c.text, c.timestamp
+                    FROM COMMENT c
+                    WHERE c.post_ID = ? AND c.user_ID IS NULL
+                    ORDER BY c.timestamp DESC`;
+            params = [postId];
+        }
         
         db.all(sql, params, (err, rows) => {
             if (err) {
@@ -67,15 +64,25 @@ exports.getCommentsForPost = (postId) => {      // TODO: add authorId as first p
 /**
  * This function retrieves a single comment given its id.
  */
-exports.getCommentById = (id) => {        // TODO: add 'userId' as first parameter adding the comment: // userId represents the user who is trying to retrieve the comment
+exports.getCommentById = (userId, id) => {
     return new Promise((resolve, reject) => {
-        const sql = `SELECT c.id, c.text, c.timestamp, c.post_ID AS postId, u.name AS authorName, u.id AS authorId,
+        let sql;
+
+        if (userId) {
+            // Authenticated user
+            sql = `SELECT c.id, c.text, c.timestamp, c.post_ID AS postId, u.name AS userName, u.id AS userId,
                     0 AS countInterestingMarks, FALSE AS isInterestingForCurrentUser
                     FROM COMMENT c
                     LEFT JOIN USER u ON c.user_ID = u.id
                     WHERE c.id = ?`;    // a comment just added has 0 interesting marks (this is why "0 AS countInterestingMarks")
                                         // and it is not marked as interesting by the author by default (this is why "FALSE AS isInterestingForCurrentUser")
-
+        } else {
+            // Anonymous user
+            sql = `SELECT c.id, c.text, c.timestamp, c.post_ID AS postId
+                    FROM COMMENT c
+                    WHERE c.id = ? AND c.user_ID IS NULL`;
+        }
+        
         db.get(sql, [id], (err, row) => {
             if (err) {
                 reject(err);
@@ -94,23 +101,20 @@ exports.getCommentById = (id) => {        // TODO: add 'userId' as first paramet
  * This function adds a new comment related to a post in the database.
  * The comment id is added automatically by the DB, and it is returned as this.lastID.
  */
-exports.addCommentToPost = (comment, postId) => {    // TODO: pass 'authorId' as first parameter inside the addCommentToPost()
+exports.addCommentToPost = (comment, postId) => {
     return new Promise((resolve, reject) => {
-        const sql = `INSERT INTO COMMENT(text, post_ID)
-                    VALUES (?, ?)`;
 
-        /* TODO: Uncomment this query (the complete one) and delete the one above, then add the third parameter in const params as written below
-        const sql = `INSERT INTO COMMENT(text, post_ID, user_ID)
+        const sql = `INSERT INTO COMMENT(text, user_ID, post_ID)
                     VALUES (?, ?, ?)`;
-        */
-        const params = [comment.text, postId];  // TODO: add 'comment.authorId' as third parameter like this: [comment.text, postId, comment.authorId]
+        
+        const params = [comment.text, comment.userId, postId];
 
         db.run(sql, params, function (err) {
             if (err) {
                 reject(err);
             } else {
                 // return the object just inserted, with the automatically assigned id and timestamp
-                exports.getCommentById(this.lastID)     // TODO: add 'comment.authorId' as first parameter adding the comment: // comment.authorId represents the logged user
+                exports.getCommentById(comment.userId, this.lastID)    // comment.userId represents the (potentially) logged user
                     .then(comment => resolve(comment))
                     .catch(err => reject(err));
             }
@@ -132,7 +136,7 @@ exports.updateComment = (commentId, comment) => {
             } else if (this.changes !== 1) {
                 resolve({ error: 'Comment not found' });
             } else {
-                exports.getCommentById(commentId)
+                exports.getCommentById(comment.userId, commentId)
                     .then(updatedComment => resolve(updatedComment))
                     .catch(err => reject(err));
             }

@@ -6,19 +6,19 @@ import { CustomNavbar } from './CustomNavbar';
 import { PostCard } from './PostCard'
 import { CommentForm } from './CommentForm'
 import { PostForm } from './PostForm'
-// TODO: import { LoginForm } from './Auth';
+import { LoginForm } from './Auth';
 
 import API from '../API.js';
 
 
 function NotFoundLayout() {
     return (
-      <>
+      <div className="d-flex flex-column justify-content-center align-items-center text-center">
         <h2>This route is not valid!</h2>
         <Link to="/">
           <Button variant="primary">Go back to the main page!</Button>
         </Link>
-      </>
+      </div>
     );
 }
 
@@ -51,14 +51,16 @@ function GenericLayout(props) {
         <>
             <Row>
                 <Col xs={12}>
-                    <CustomNavbar />
+                    <CustomNavbar user={props.user} logout={props.logout} handleReturnHome={props.handleReturnHome} />
                 </Col>
             </Row>
 
 
             <Outlet />
 
-            <footer className="blockquote-footer ms-2 my-2"> &copy; 2025 Web Applications </footer>
+            <footer className="blockquote-footer ms-2 my-2">
+                &copy; Royal Forum · by Cristian Sapia<br />
+            </footer>
         </>
     );
 }
@@ -71,7 +73,7 @@ function BodyLayout(props) {
             <div>
                 {props.posts
                     .map(post => (
-                        <PostCard key={post.id} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment}
+                        <PostCard key={post.id} user={props.user} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment}
                             showError={props.showError} showSuccess={props.showSuccess} handleErrors={props.handleErrors} />
                     ))
                 }
@@ -79,40 +81,41 @@ function BodyLayout(props) {
         );
     };
 
+    // If posts have not been loaded initially, show spinner only
+    if (props.dirty) {
+        return <SpinnerLoadingLayout message="Loading posts..." />;
+    }
 
     return (
-        <>
+        <>  
             <div className="top-bar d-flex justify-content-end me-4">
-                <Link to={'/add-post'}>
-                    <Button className="main-color add-post-button">
-                        <i className="bi bi-plus-circle me-1" /> Add post
+                {props.user ? (
+                    <Link to={'/add-post'}>
+                        <Button className="main-color add-post-button">
+                            <i className="bi bi-plus-circle me-1" /> Add post
+                        </Button>
+                    </Link>
+                ) : (
+                    <Button className="main-color" disabled>
+                        <i className="bi bi-lock-fill me-1" />
+                        Login to add posts
                     </Button>
-                </Link>
-                {/*
-                  *  TODO: IMPLEMENT THE FACT THAT IF THE USER IS AUTHENTICATED, SHOW THE BUTTON ABOVE, OTHERWISE THE ONE BELOW
-                  
-                <Button className="main-color" size="sm" disabled>
-                <i className="bi bi-lock-fill me-1" />
-                    Login to add posts
-                </Button>
-
-                */
-                }
+                )}
             </div>
+
 
             { props.message.text ?
                 <div className="d-flex justify-content-center mt-2">
-                    <Alert variant={props.message.type} className="text-center w-50" onClose={() => props.setMessage({ type: '', text: '' })} dismissible >
+                    <Alert variant={props.message.type} className="text-center mx-auto" style={{ width: '42%' }}
+                        onClose={() => props.setMessage({ type: '', text: '' })} dismissible >
                         {props.message.text}
                     </Alert>
                 </div> : null
             }
 
-            {props.dirty ? (
-                <SpinnerLoadingLayout message={'Loading posts...'} />
-            ) : (
-                <PostList />
-            )}
+
+            <PostList />
+            
         </>
     );
 }
@@ -122,7 +125,7 @@ function AddPostLayout(props) {
         <Container className="my-4">
             <Row className="justify-content-center">
                 <Col md={8} lg={6}>
-                    <PostForm createPost={props.createPost} />
+                    <PostForm createPost={props.createPost} handleReturnHome={props.handleReturnHome} />
                 </Col>
             </Row>
         </Container>
@@ -134,7 +137,7 @@ function AddCommentLayout(props) {
     const { postId } = useParams();
 
     return (
-        <CommentForm addCommentToPost={props.addCommentToPost} postId={parseInt(postId)} />
+        <CommentForm addCommentToPost={props.addCommentToPost} postId={parseInt(postId)} handleReturnHome={props.handleReturnHome} />
     );
 }
 
@@ -168,7 +171,7 @@ function EditCommentLayout(props) {
     return (
         <>
             {commentToEdit ? (
-                <CommentForm commentToEdit={commentToEdit} editComment={props.editComment} />
+                <CommentForm commentToEdit={commentToEdit} editComment={props.editComment} handleReturnHome={props.handleReturnHome} />
             ) : (
                 <SpinnerLoadingLayout message={'Loading comment...'} />
             )}

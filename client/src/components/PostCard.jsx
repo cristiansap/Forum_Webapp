@@ -1,6 +1,6 @@
 import { Card, Button, Collapse, ListGroup } from 'react-bootstrap';
-import { Outlet, Link, useParams, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import API from '../API.js';
 
 import dayjs from 'dayjs';
@@ -29,7 +29,9 @@ function formatTextWithNewlines(text) {
 
 
 function CommentsCollapse(props) {
-  
+
+  const navigate = useNavigate();  // to be able to call useNavigate, the component must already be in <BrowserRouter> (done in main.jsx)
+
   return (
     <Collapse in={props.showComments}>
       <div className="mt-3">
@@ -44,30 +46,31 @@ function CommentsCollapse(props) {
                   <div className="d-flex align-items-start justify-content-between">
 
                     <div className="d-flex flex-column align-items-center me-3">
-                      <Button variant="link" className="p-0 interesting-button tooltip-wrapper">
+                      <Button variant="link" className="p-0 interesting-button tooltip-wrapper" disabled={!props.user}>
                         <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} 
                           onClick={() => props.markOrUnmarkCommentAsInteresting(comment.id, !comment.isInterestingForCurrentUser)} />
                         <span className="tooltip-text-star-button">Mark comment as interesting</span>
                       </Button>
-                      <small className="text-muted">{comment.countInterestingMarks}</small>
+                      {props.user ? <small className="text-muted">{comment.countInterestingMarks}</small> : null}
                     </div>
 
                     <div className="flex-grow-1 limited-width-text">
                       <p className="m-0 multiline-text">{formatTextWithNewlines(comment.text)}</p>
                       <small className="text-muted">
-                        &mdash; {comment.authorName || 'anonymous'} [{dayjsTimestamp}]
+                        &mdash; {comment.userName || 'anonymous'} [{dayjsTimestamp}]
                       </small>
                     </div>
 
                     <div className="ms-2">
-                      <Link to={`/edit-comment/${comment.id}`} >
-                        <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn">
-                          <i className="bi bi-pencil-fill" />
-                        </Button>
-                      </Link>
+                      <Button variant="outline-warning" size="sm" className="ms-2 edit-comment-btn"
+                        onClick={() => navigate(`/edit-comment/${comment.id}`)}
+                        disabled={!props.user || props.user.id !== comment.userId}>
+                        <i className="bi bi-pencil-fill" />
+                      </Button>
 
                       <Button variant="outline-danger" size="sm" className="ms-2 delete-comment-btn"
-                        onClick={() => props.deleteComment(comment.id)} >
+                        onClick={() => props.deleteComment(comment.id)}
+                        disabled={!props.user || props.user.id !== comment.userId}>
                         <i className="bi bi-trash-fill" />
                       </Button>
                     </div>
@@ -149,7 +152,7 @@ function PostCard(props) {
           </Card.Title>
           <small className="text-muted">{dayjsTimestamp}</small>
         </div>
-        <Card.Subtitle className="mb-2 text-muted">by {props.post.authorName}</Card.Subtitle>
+        <Card.Subtitle className="mb-2 text-muted">by {props.post.userName}</Card.Subtitle>
 
         <Card.Text className="multiline-text">{formatTextWithNewlines(props.post.text)}</Card.Text>
 
@@ -187,13 +190,14 @@ function PostCard(props) {
           )}
 
           <Button variant="outline-danger" size="sm" className="ms-2 delete-post-btn ms-auto"
-              onClick={() => props.deletePost(props.post.id)}>
+              onClick={() => props.deletePost(props.post.id)}
+              disabled={!props.user || props.user.id !== props.post.userId}>
             <i className="bi bi-trash-fill me-1" />
             Delete Post
           </Button>
         </div>
 
-        <CommentsCollapse comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} 
+        <CommentsCollapse user={props.user} comments={commentsCache[props.post.id]} showComments={showComments} deleteComment={props.deleteComment} 
                           markOrUnmarkCommentAsInteresting={markOrUnmarkCommentAsInteresting} />
             
       </Card.Body>

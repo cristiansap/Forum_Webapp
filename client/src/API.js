@@ -39,8 +39,8 @@ const getPosts = async () => {
         id: post.id,
         title: post.title,
         text: post.text,
-        authorName: post.authorName,
-        authorId: post.authorId,
+        userName: post.userName,
+        userId: post.userId,
         timestamp: post.timestamp,
         maxComments: post.maxComments,
         commentCount: post.commentCount
@@ -56,7 +56,8 @@ const getPosts = async () => {
 const createPost = async (post) => {
   return getJson(
     fetch(SERVER_URL + 'posts', {
-      method: 'POST',                 // TODO: add the following line below 'method' -> credentials: 'include',  // the route is protected by authentication, so authentication cookie must be forwarded
+      method: 'POST',
+      credentials: 'include',  // authentication cookie must be forwarded
       headers: {
         'Content-Type': 'application/json'
       },
@@ -71,7 +72,8 @@ const createPost = async (post) => {
 function deletePost(postId) {
   return getJson(
     fetch(SERVER_URL + "posts/" + postId, {
-      method: 'DELETE',    // TODO: add the following line below 'method' -> credentials: 'include'  // the route is protected by authentication, so authentication cookie must be forwarded
+      method: 'DELETE',
+      credentials: 'include'  // authentication cookie must be forwarded
     })
   );
 }
@@ -81,14 +83,17 @@ function deletePost(postId) {
  */
 const getCommentsForPost = async (postId) => {
   return getJson(
-    fetch(SERVER_URL + 'posts/' + postId + '/comments')
+    fetch(SERVER_URL + 'posts/' + postId + '/comments', {
+      method: 'GET',
+      credentials: 'include'  // authentication cookie must be forwarded
+    })
   ).then(json => {
     return json.map((comment) => {
       const clientComment = {
         id: comment.id,
         text: comment.text,
-        authorName: comment.authorName,
-        authorId: comment.authorId,
+        userName: comment.userName,
+        userId: comment.userId,
         timestamp: comment.timestamp,
         postId: postId,
         isInterestingForCurrentUser: comment.isInterestingForCurrentUser,
@@ -106,6 +111,7 @@ const addCommentToPost = async (postId, comment) => {
   return getJson(
     fetch(SERVER_URL + 'posts/' + postId + '/comments', {
       method: 'POST',
+      credentials: 'include',   // authentication cookie must be forwarded
       headers: {
         'Content-Type': 'application/json'
       },
@@ -119,16 +125,15 @@ const addCommentToPost = async (postId, comment) => {
  */
 const getCommentById = async (commentId) => {
   return getJson(
-    fetch(SERVER_URL + 'comments/' + commentId), {
-      method: 'GET',    // TODO: add the following line below 'method' -> credentials: 'include'  // the route is protected by authentication, so authentication cookie must be forwarded
-    }
+    fetch(SERVER_URL + 'comments/' + commentId, {
+      method: 'GET',
+      credentials: 'include'  // authentication cookie must be forwarded
+    })
   ).then(comment => {
-    // Return the comment including only the necessary information
+    // Return the comment including only the necessary information (this is just to pre-fill the input field when editing a comment)
     return {
       id: comment.id,
       text: comment.text,
-      authorId: comment.authorId,
-      postId: comment.postId,
     };
   });
 };
@@ -140,7 +145,8 @@ const getCommentById = async (commentId) => {
 const updateComment = async (commentId, newComment) => {
   return getJson(
     fetch(SERVER_URL + 'comments/' + commentId, {
-      method: 'PUT',    // TODO: add the following line below 'method' -> credentials: 'include'  // the route is protected by authentication, so authentication cookie must be forwarded
+      method: 'PUT',
+      credentials: 'include',  // authentication cookie must be forwarded
       headers: {
         'Content-Type': 'application/json',
       },
@@ -155,7 +161,8 @@ const updateComment = async (commentId, newComment) => {
 const deleteComment = async (commentId) => {
   return getJson(
     fetch(SERVER_URL + 'comments/' + commentId, {
-      method: 'DELETE',     // TODO: add the following line below 'method' -> credentials: 'include'  // the route is protected by authentication, so authentication cookie must be forwarded
+      method: 'DELETE',
+      credentials: 'include'  // authentication cookie must be forwarded
     })
   );
 };
@@ -166,7 +173,8 @@ const deleteComment = async (commentId) => {
 const markOrUnmarkCommentAsInteresting = async (commentId, interesting) => {
   return getJson(
     fetch(SERVER_URL + 'comments/' + commentId + '/interesting', {
-      method: 'PUT',      // TODO: add the following line below 'method' -> credentials: 'include'  // the route is protected by authentication, so authentication cookie must be forwarded
+      method: 'PUT',
+      credentials: 'include',  // authentication cookie must be forwarded
       headers: {
         'Content-Type': 'application/json',
       },
@@ -176,5 +184,46 @@ const markOrUnmarkCommentAsInteresting = async (commentId, interesting) => {
 };
 
 
-const API = { getPosts, createPost, deletePost, getCommentsForPost, addCommentToPost, getCommentById, updateComment, deleteComment, markOrUnmarkCommentAsInteresting};
+/*** Authentication functions ***/
+
+/**
+ * This function wants username and password inside a "credentials" object.
+ * It executes the log-in.
+ */
+const logIn = async (credentials) => {
+  return getJson(fetch(SERVER_URL + 'sessions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',  // this parameter specifies that authentication cookie must be forwarded
+    body: JSON.stringify(credentials),
+  })
+  )
+};
+
+/**
+ * This function is used to verify if the user is still logged-in.
+ * It returns a JSON object with the user info.
+ */
+const getUserInfo = async () => {
+  return getJson(fetch(SERVER_URL + 'sessions/current', {
+    credentials: 'include'  // this parameter specifies that authentication cookie must be forwarded
+  })
+  )
+};
+
+/**
+ * This function destroy the current user's session and execute the log-out.
+ */
+const logOut = async () => {
+  return getJson(fetch(SERVER_URL + 'sessions/current', {
+    method: 'DELETE',
+    credentials: 'include'  // this parameter specifies that authentication cookie must be forwarded
+  })
+  )
+}
+
+
+const API = { getPosts, createPost, deletePost, getCommentsForPost, addCommentToPost, getCommentById, updateComment, deleteComment, markOrUnmarkCommentAsInteresting, logIn, getUserInfo, logOut };
 export default API;
