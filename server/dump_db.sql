@@ -18,14 +18,14 @@ CREATE TABLE IF NOT EXISTS POST (
     user_ID INTEGER NOT NULL,
     text TEXT NOT NULL,
     max_comments INTEGER,  -- optional
-    timestamp TEXT NOT NULL DEFAULT (datetime('now')),    -- automatically set the current date/time when you enter
+    timestamp TEXT NOT NULL DEFAULT (datetime('now')),    -- automatically set the current date/time when you enter the record
     FOREIGN KEY(user_ID) REFERENCES USER(id)
 );
 
 CREATE TABLE COMMENT (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     text TEXT NOT NULL,
-    timestamp TEXT NOT NULL DEFAULT (datetime('now')),    -- automatically set the current date/time when you enter
+    timestamp TEXT NOT NULL DEFAULT (datetime('now')),    -- automatically set the current date/time when you enter the record
     user_ID INTEGER,  -- optional (comments may be anonymous)
     post_ID INTEGER NOT NULL,
     FOREIGN KEY(user_ID) REFERENCES USER(id),
