@@ -20,7 +20,7 @@ app.use(express.json()); // to automatically decode incoming json
 
 /* Set up and enable Cross-Origin Resource Sharing (CORS) */
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: 'http://localhost:5173',  // allow requests from the React development server
   credentials: true,    // to get info related to the session (if it is set, CORS does not allow a generic origin *)
 };
 app.use(cors(corsOptions));

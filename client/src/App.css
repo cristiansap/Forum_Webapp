@@ -114,12 +114,8 @@
 }
 
 .tooltip-text-star-button {
-  bottom: 85% !important;  /* above the button */
-}
-
-.tooltip-text-star-button {
-  bottom: 94%;
-  left: -8.7rem;
+  bottom: 85%;
+  left: -10rem;
 }
 
 /* Show tooltip on mouseover */
@@ -127,8 +123,8 @@
   visibility: visible;
 }
 
-
 .tooltip-wrapper:hover .tooltip-text-add-comment-button {
+  left: 4.5rem;
   visibility: visible;
 }
 

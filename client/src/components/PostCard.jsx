@@ -53,7 +53,9 @@ function CommentsCollapse(props) {
                           <i className={`bi ${comment.isInterestingForCurrentUser ? 'bi-star-fill' : 'bi-star'}`} />
                         </Button>
                         <span className="tooltip-text-star-button">
-                          {props.user ? "Mark comment as interesting" : "You're not authenticated."}
+                          {props.user ? (comment.isInterestingForCurrentUser ?
+                            "Comment marked as interesting" : "Mark comment as interesting"
+                          ) : "You're not authenticated."}
                         </span>
                       </div>
                       {props.user ? <small className="text-muted">{comment.countInterestingMarks}</small> : null}
