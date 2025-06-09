@@ -4,6 +4,8 @@
 
 const db = require('./db');
 
+// Convert a DB record into an object in API format.
+// Note that JSON object requires camelCase.
 function convertCommentFromDbRecord(record) {
   return {
     id: record.id,

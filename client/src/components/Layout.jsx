@@ -100,16 +100,29 @@ function BodyLayout(props) {
                 {props.posts
                     .map(post => (
                         <PostCard key={post.id} user={props.user} loggedInAsAdmin={props.loggedInAsAdmin} post={post} deletePost={props.deletePost} deleteComment={props.deleteComment}
-                            showError={props.showError} showSuccess={props.showSuccess} handleErrors={props.handleErrors} />
+                            showError={props.showError} handleErrors={props.handleErrors} />
                     ))
                 }
             </div>
         );
     };
 
-    // If posts have not been loaded initially, show spinner only
+    // If posts have not been loaded initially, show spinner and alert
     if (props.dirty) {
-        return <SpinnerLoadingLayout message="Loading posts..." />;
+        return (
+            <>
+                { props.message.text &&
+                    <div className="d-flex justify-content-center mt-2">
+                        <Alert variant={props.message.type} className="text-center mx-auto" style={{ width: '42%' }}
+                            onClose={() => props.setMessage({ type: '', text: '' })} dismissible >
+                            {props.message.text}
+                        </Alert>
+                    </div>
+                }
+
+                <SpinnerLoadingLayout message="Loading posts..." />
+            </>
+        );
     }
 
     return (

@@ -6,8 +6,8 @@
 const db = require('./db');
 
 
-// Convert a DB record into an object in API format
-// Note that JSON object requires camelCase as per the API specifications we defined.
+// Convert a DB record into an object in API format.
+// Note that JSON object requires camelCase.
 function convertPostFromDbRecord(record) {
   return {
     id: record.id,

@@ -35,7 +35,7 @@ function CommentsCollapse(props) {
   return (
     <Collapse in={props.showComments}>
       <div className="mt-3">
-        <h5 className="mb-3">Comments</h5>
+        <h5 className="mb-3">{props.user ? "Comments" : "Anonymous Comments"}</h5>
         <ListGroup>
           {props.comments?.length > 0 ? (
             props.comments.map((comment) => {
@@ -128,7 +128,6 @@ function PostCard(props) {
         setCommentsCache(prev => ({ ...prev, [props.post.id]: fetchedComments }));
         setShowComments(true);      // and then show comments
       } catch (err) {
-        console.log("An error occurred when fetching comments:", err);
         props.showError('Comments failed to load. Please try again.');   // show an alert message to the user
       }
     } else {
@@ -163,7 +162,6 @@ function PostCard(props) {
       setCommentsCache(prev => ({ ...prev, [props.post.id]: refreshed }));
 
     } catch (err) {
-      console.log(err);
       props.handleErrors(err);
     }
   };

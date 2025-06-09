@@ -14,9 +14,9 @@ function App() {
 
   const navigate = useNavigate();  // to be able to call useNavigate, the component must already be in <BrowserRouter> (done in main.jsx)
 
-  const [postList, setPostList] = useState([]);     // post list initially empty
-  const [dirty, setDirty] = useState(true);         // initially information has to be loaded
-  const [message, setMessage] = useState({ type: '', text: '' });       // used to display confirmation / error messages
+  const [postList, setPostList] = useState([]);   // post list initially empty
+  const [dirty, setDirty] = useState(true);       // initially information has to be loaded
+  const [message, setMessage] = useState({ type: '', text: '' });   // used to display confirmation / error messages
 
 
   const [user, setUser] = useState(null);      // logged-in user
@@ -25,11 +25,12 @@ function App() {
 
   const showSuccess = (msg) => {
     setMessage({ type: 'success', text: msg });
-    setTimeout(() => setMessage({ type: '', text: '' }), 1600);   // Hide the alert message after 1.8s
+    setTimeout(() => setMessage({ type: '', text: '' }), 1600);   // Hide the alert message after 1.6s
   };
 
   const showError = (msg) => {
     setMessage({ type: 'danger', text: msg });
+    console.log(msg);
   };
 
   const handleReturnHome = () => {
@@ -176,11 +177,11 @@ function App() {
       <Route path="/" element={<GenericLayout user={user} logout={handleLogout} handleReturnHome={handleReturnHome} loggedInAsAdmin={loggedInAsAdmin} />}>
         <Route index element={<BodyLayout user={user} loggedInAsAdmin={loggedInAsAdmin} posts={postList} setPostList={setPostList} dirty={dirty} setDirty={setDirty}
                                 deletePost={deletePost} deleteComment={deleteComment} message={message} setMessage={setMessage} 
-                                showError={showError} showSuccess={showSuccess} handleErrors={handleErrors} />} />
+                                showError={showError} handleErrors={handleErrors} />} />
         <Route path="add-post" element={<AddPostLayout createPost={createPost} handleReturnHome={handleReturnHome} />} />
         <Route path="add-comment/:postId" element={<AddCommentLayout addCommentToPost={addCommentToPost} handleReturnHome={handleReturnHome} />} />
         <Route path="edit-comment/:id" element={<EditCommentLayout editComment={editComment} setMessage={setMessage} 
-                                                  showError={showError} showSuccess={showSuccess} handleReturnHome={handleReturnHome} />} />
+                                                  showError={showError} handleReturnHome={handleReturnHome} />} />
         <Route path="*" element={<NotFoundLayout />} />
         <Route path="/login" element={<LoginLayout login={handleLogin} user={user} loggedInAsAdmin={loggedInAsAdmin} setLoggedInAsAdmin={setLoggedInAsAdmin} handleReturnHome={handleReturnHome} />} />
       </Route>
