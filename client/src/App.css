@@ -58,7 +58,7 @@
   background-color: #f0ad4e;
   color: white;
   border-color: #f0ad4e;
-  opacity: 0.8;
+  opacity: 0.65;
 }
 
 /* Set the properties when the user presses the button */
@@ -167,7 +167,7 @@
 .delete-post-button:disabled, .delete-comment-button:disabled {
   background-color: #dc3545;
   color: white;
-  opacity: 0.6;
+  opacity: 0.58;
 }
 
 .edit-comment-button:hover {
@@ -178,7 +178,7 @@
 .edit-comment-button:disabled {
   background-color: #ffc107;
   color: white;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 /* Correctly handle '\n' characters and word-break in post and comment texts */

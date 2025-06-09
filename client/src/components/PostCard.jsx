@@ -186,7 +186,7 @@ function PostCard(props) {
 
         <div className="mb-2 text-muted">
           Maximum number of comments: {props.post.maxComments !== null ? props.post.maxComments : 'unlimited'}<br />
-          Actual comments: {props.post.commentCount}
+          Total number of comments: {props.post.commentCount}
         </div>
 
         <div className="d-flex gap-2">
