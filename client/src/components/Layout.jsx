@@ -200,7 +200,6 @@ function EditCommentLayout(props) {
                 }
             })
             .catch(err => {
-                console.error('Error fetching the comment:', err);
                 props.showError('Could not retrieve the comment. Please try again.');   // show an alert message to the user
                 navigate('/');
                 window.scrollTo({ top: 0, behavior: 'smooth' });   // scrolls the window smoothly to the top of the page

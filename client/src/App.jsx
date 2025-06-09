@@ -30,7 +30,6 @@ function App() {
 
   const showError = (msg) => {
     setMessage({ type: 'danger', text: msg });
-    console.log(msg);
   };
 
   const handleReturnHome = () => {

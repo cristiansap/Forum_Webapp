@@ -132,7 +132,6 @@ app.get('/api/posts',
       const posts = await postDao.listPosts();
       res.json(posts);
     } catch (err) {
-      console.log(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(500).json({ error: 'Database error while retrieving posts' });
     }
   }
@@ -166,7 +165,6 @@ app.post('/api/posts', isLoggedIn,
       if (err.code === 'DUPLICATE_TITLE') {
         res.status(409).json({ error: err.message });   // error: 409 Conflict (customly handled)
       } else {
-        console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
         res.status(503).json({ error: 'Database error during post creation.' });
       }
     }
@@ -209,7 +207,6 @@ app.delete('/api/posts/:id', isLoggedIn,
         res.status(200).json(numChanges);  // deleted successfully
       }
     } catch (err) {
-      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(503).json({ error: "Database error during post deletion." });
     }
 });
@@ -230,7 +227,6 @@ app.get('/api/posts/:id/comments',
       const comments = await commentDao.getCommentsForPost(userId, req.params.id);
       res.json(comments);
     } catch (err) {
-      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(503).json({ error: 'Database error while retrieving comments.' });
     }
   }
@@ -263,7 +259,6 @@ app.post('/api/posts/:id/comments',
       const addedComment = await commentDao.addCommentToPost(comment, req.params.id);
       res.json(addedComment);
     } catch (err) {
-      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(500).json({ error: 'Database error while adding comment.' });
     }
 });
@@ -286,7 +281,6 @@ app.get('/api/comments/:id',
         res.json(comment);  // comment found
       }
     } catch (err) {
-      console.error(err);  // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(503).json({ error: 'Database error while retrieving the single comment.' });
     }
   }
@@ -334,7 +328,6 @@ app.put('/api/comments/:id', isLoggedIn,
         res.json(result);
 
     } catch (err) {
-      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(503).json({ error: 'Database error while updating comment.' });
     }
   }
@@ -376,7 +369,6 @@ app.delete('/api/comments/:id', isLoggedIn,
         res.status(200).json(numChanges);  // deleted successfully
       }
     } catch (err) {
-      console.error(err);   // Logging errors is useful while developing, to catch SQL errors etc.
       res.status(503).json({ error: "Database error during comment deletion." });
     }
   }
@@ -411,7 +403,6 @@ app.put('/api/comments/:id/interesting', isLoggedIn,
       else
         res.json(result);
     } catch (err) {
-      console.error(err);
       res.status(503).json({ error: 'Database error while updating interesting flag for a comment.' });
     }
   }
@@ -466,7 +457,6 @@ app.get('/api/sessions/current', (req, res) => {
   else
     res.status(401).json({ error: 'Not authenticated' });
 });
-
 
 // DELETE /api/sessions/current
 // This route is used for logging out the current user.
