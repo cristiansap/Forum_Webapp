@@ -23,6 +23,37 @@ function App() {
   const [loggedInAsAdmin, setLoggedInAsAdmin] = useState(false);  // keep track whether the currently logged-in user is an admin
 
 
+  // This useEffect is for checking authentication when loading the app
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // here you have the user info, if already logged-in
+        const user = await API.getUserInfo();
+        setUser(user);
+        // check if the user is authenticated as admin and set the state
+        if (user.isTotp)
+          setLoggedInAsAdmin(true);
+      } catch (err) {
+        // NO need to do anything: user is simply not yet authenticated
+      }
+    };
+    checkAuth();
+  }, []);  // the useEffect callback is called only the first time the component is mounted
+
+
+  // This useEffect is for fetching forum posts when the 'dirty' flag is true
+  useEffect(() => {
+    if (dirty) {
+      API.getPosts()
+        .then(posts => {
+          setPostList(posts);
+          setDirty(false);
+        })
+        .catch((err) => handleErrors(err));
+    }
+  }, [dirty]);
+
+
   const showSuccess = (msg) => {
     setMessage({ type: 'success', text: msg });
     setTimeout(() => setMessage({ type: '', text: '' }), 1600);   // Hide the alert message after 1.6s
@@ -57,38 +88,7 @@ function App() {
     // Show the error to the user
     showError(msg);
   };
-
-
-  // This useEffect is for checking authentication when loading the app
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // here you have the user info, if already logged-in
-        const user = await API.getUserInfo();
-        setUser(user);
-        // check if the user is authenticated as admin and set the state
-        if (user.isTotp)
-          setLoggedInAsAdmin(true);
-      } catch (err) {
-        // NO need to do anything: user is simply not yet authenticated
-      }
-    };
-    checkAuth();
-  }, []);  // the useEffect callback is called only the first time the component is mounted
-
-
-  // This useEffect is for fetching forum posts when the 'dirty' flag is true
-  useEffect(() => {
-    if (dirty) {
-      API.getPosts()
-        .then(posts => {
-          setPostList(posts);
-          setDirty(false);
-        })
-        .catch((err) => handleErrors(err));
-    }
-  }, [dirty]);
-
+  
 
   // This function handles the login process.
   const handleLogin = async (credentials) => {
