@@ -71,20 +71,17 @@ function SpinnerLoadingLayout(props) {
 
 function GenericLayout(props) {
     return (
-        <div className="d-flex flex-column min-vh-100">
-            <header>
-                <Row>
-                    <Col xs={12}>
-                        <CustomNavbar user={props.user} logout={props.logout} handleReturnHome={props.handleReturnHome} loggedInAsAdmin={props.loggedInAsAdmin} />
-                    </Col>
-                </Row>
-            </header>
+        <div className="min-vh-100 d-flex flex-column">
 
-            <main className="flex-grow-1">  {/* flex-grow-1 allows the component to expand and fill all the remaining vertical space. */}
-                <Outlet />
-            </main>
+            <CustomNavbar user={props.user} logout={props.logout} handleReturnHome={props.handleReturnHome} loggedInAsAdmin={props.loggedInAsAdmin} />
 
-            <footer className="blockquote-footer text-center">
+            <div className="d-flex flex-column">
+                <main className="flex-grow-1">  {/* flex-grow-1 allows the component to expand and fill all the remaining vertical space */}
+                    <Outlet />
+                </main>
+            </div>
+
+            <footer className="blockquote-footer text-center py-3 mt-auto">
                 &copy; Royal Forum · by Cristian Sapia<br />
             </footer>
         </div>
@@ -127,19 +124,21 @@ function BodyLayout(props) {
 
     return (
         <>  
-            <div className="top-bar d-flex justify-content-end me-4">
-                {props.user ? (
-                    <Link to={'/add-post'}>
-                        <Button className="main-color add-post-button">
-                            <i className="bi bi-plus-circle me-1" /> Add post
+            <div className="sticky-add-post-button">
+                <div className="d-flex justify-content-end me-4">
+                    {props.user ? (
+                        <Link to={'/add-post'}>
+                            <Button className="main-color add-post-button">
+                                <i className="bi bi-plus-circle me-1" /> Add post
+                            </Button>
+                        </Link>
+                    ) : (
+                        <Button className="main-color" disabled>
+                            <i className="bi bi-lock-fill me-1" />
+                            Login to add posts
                         </Button>
-                    </Link>
-                ) : (
-                    <Button className="main-color" disabled>
-                        <i className="bi bi-lock-fill me-1" />
-                        Login to add posts
-                    </Button>
-                )}
+                    )}
+                </div>
             </div>
 
 

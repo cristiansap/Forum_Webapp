@@ -3,6 +3,18 @@
   background-color: #4169E1;
 }
 
+.sticky-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;   /* make sure navbar overlaps other elements */
+}
+
+.sticky-add-post-button {
+  position: sticky;
+  top: 94px;
+  z-index: 99;
+}
+
 .home-button, .home-button:visited, .home-button:active, .home-button:focus {
   color: #f8f9fa;
   font-size: 1.3rem;
