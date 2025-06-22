@@ -67,6 +67,23 @@ const createPost = async (post) => {
 };
 
 /**
+ * This function retrieves a single post given its id.
+ * This function is called to update the number of comments associated with the post on the interface.
+ */
+const getPostById = async (postId) => {
+  return getJson(
+    fetch(SERVER_URL + 'posts/' + postId, {
+      method: 'GET'
+    })
+  ).then(post => {
+    return {
+      id: post.id,
+      commentCount: post.commentCount
+    };
+  });
+};
+
+/**
  * This function deletes an existing post by its id.
  */
 function deletePost(postId) {
@@ -241,5 +258,5 @@ const logOut = async () => {
 }
 
 
-const API = { getPosts, createPost, deletePost, getCommentsForPost, addCommentToPost, getCommentById, updateComment, deleteComment, markOrUnmarkCommentAsInteresting, logIn, getUserInfo, logOut, totpVerify };
+const API = { getPosts, createPost, getPostById, deletePost, getCommentsForPost, addCommentToPost, getCommentById, updateComment, deleteComment, markOrUnmarkCommentAsInteresting, logIn, getUserInfo, logOut, totpVerify };
 export default API;

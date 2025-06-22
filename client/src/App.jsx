@@ -64,7 +64,6 @@ function App() {
   };
 
   const handleReturnHome = () => {
-    setMessage('');   // reset message state
     navigate('/');    // navigate to the home
   }
 
@@ -95,6 +94,7 @@ function App() {
     try {
       const user = await API.logIn(credentials);
       setUser(user);
+      setMessage({ type: '', text: '' });
       setDirty(true);   // refresh list of posts after successful login
     } catch (err) {
       // error is handled and visualized in the login form, so do not manage error, but throw it

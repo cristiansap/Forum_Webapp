@@ -23,6 +23,9 @@ Content-Type: application/json
 DELETE http://localhost:3001/api/posts/15 HTTP/1.1
 ###
 
+## Retrieve a single post
+GET http://localhost:3001/api/posts/1 HTTP/1.1
+###
 
 ####  COMMENTS APIs  ####
 

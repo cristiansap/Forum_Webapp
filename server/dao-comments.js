@@ -98,7 +98,6 @@ exports.getCommentById = (userId, id) => {
     });
 };
 
-
 /**
  * This function adds a new comment related to a post in the database.
  * The comment id is added automatically by the DB, and it is returned as this.lastID.

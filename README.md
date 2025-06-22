@@ -16,49 +16,25 @@
 - GET `/api/posts`: Retrieve the list of all the available posts in the forum.
   - **Response body**: JSON object with the list of posts, or with error description:
     ```json
-    [
-      {
-        "id": 1,
-        "title": "Welcome to the Forum",
-        "text": "This is the first official post from the admin team.",
-        "userName": "Cristian",
-        "userId": 1,
-        "timestamp": "2025-06-08 15:24:50",
-        "maxComments": 5,
-        "commentCount": 5
-      },
-      ...
-    ]
+    [ { "id": 1, "title": "Welcome to the Forum", "text": "First official post.", "userName": "Cristian",
+      "userId": 1, "timestamp": "2025-06-08 15:24:50", "maxComments": 5, "commentCount": 5 }, ... ]
     ```
   - **Codes**: `200 OK`, `500 Internal Server Error`.
 
 - POST `/api/posts`: Create a new post by providing all relevant information. Note that only autenticated users can perform this action.
   - **Request body**: JSON object with all relevant information:
     ```json
-    {
-      "title": "This is an amazing post!",
-      "text": "This is an example of post of the Royal Forum",
-      "maxComments": 10
-    }
+    { "title": "This is an amazing post!", "text": "This is a post of the Royal Forum", "maxComments": 10 }
     ```
   - **Response body**: JSON object with the newly added post, or with error description:
     ```json
-    {
-      "id": 1,
-      "title": "This is an amazing post!",
-      "text": "This is an example of post of the Royal Forum",
-      "userName": "Cristian",
-      "userId": 1,
-      "timestamp": "2025-06-08 12:45:00",
-      "maxComments": 10,
-      "commentCount": 5
-    }
+    { "id": 1, "title": "This is an amazing post!", "text": "This is a post of the Royal Forum",
+      "userName": "Cristian", "userId": 1, "timestamp": "2025-06-08 12:45:00", "maxComments": 10,
+      "commentCount": 5 }
     ```
     An example of an error:
     ```json
-    {
-      "error": "Database error during post creation."
-    }
+    { "error": "Database error during post creation." }
     ```
   - **Codes**: `200 OK`, `401 Unauthorized`, `409 Conflict` (already existing title), `422 Unprocessable Entity`, `503 Service Unavailable`.
 
@@ -66,93 +42,59 @@
   - **Response body**: JSON value with the number of changes in case of success, otherwise a JSON object with the error.
   - **Codes**: `200 OK`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `422 Unprocessable Entity`, `503 Service Unavailable`.
 
+- GET `/api/posts/:id`: Retrieve an existing post given its id. Note that such an API is particularly useful to update the information about the number of comments associated with the post based on the information stored in the database. This is to maintain consistency when multiple users (from different clients) add comments at the same time.
+  - **Response body**: JSON object with the information about the post, or with error description. Note that the response body content is similar to the `POST /api/posts` response.
+  - **Codes**: `200 OK`, `404 Not Found`, `422 Unprocessable Entity`, `503 Service Unavailable`.
+
 - GET `/api/posts/:id/comments`: Retrieve the list of all comments associated with a specific post, given its id. Note that anonymous users can retrieve only the anonymous comments for a given post.
   - **Response body**: JSON object with the list of comments, or with error description.
 
     An example of response body if the user is anonymous:
     ```json
-    [
-      {
-        "id": 11,
-        "text": "Thanks for the guide.",
-        "timestamp": "2025-06-09 12:20:31"
-      },
-      ...
-    ]
+    [ { "id": 11, "text": "Thanks for the guide.", "timestamp": "2025-06-09 12:20:31" }, ... ]
     ```
     An example of response body if the user is authenticated:
     ```json
-    [
-      {
-        "id": 11,
-        "text": "Thanks for the guide.",
-        "timestamp": "2025-06-09 12:20:31",
-        "userId": 5,
-        "userName": "Fabio Neri",
-        "countInterestingMarks": 0,
-        "isInterestingForCurrentUser": false
-      },
-      ...
-    ]
+    [ { "id": 11, "text": "Thanks for the guide.", "timestamp": "2025-06-09 12:20:31", "userId": 5,
+        "userName": "Fabio Neri", "countInterestingMarks": 0, "isInterestingForCurrentUser": false }, ... ]
     ```
-  - **Codes**: `200 OK`, `503 Service Unavailable`.
+  - **Codes**: `200 OK`, `422 Unprocessable Entity`, `503 Service Unavailable`.
 
 - POST `/api/posts/:id/comments`: Create a new comment related to a specific post, by providing all relevant information. Note that even anonymous users can create a comment.
   - **Request body**: JSON object with the text of the comment:
     ```json
-    {
-      "text": "This is my favorite post!"
-    }
+    { "text": "This is my favorite post!" }
     ```
   - **Response body**: JSON object with the newly added comment, or with error description.
 
     An example of response body if the user is anonymous:
     ```json
-    {
-      "id": 25,
-      "text": "This is my favorite post!",
-      "timestamp": "2025-06-08 11:42:50",
-      "postId": 3,
-    }
+    { "id": 25, "text": "This is my favorite post!", "timestamp": "2025-06-08 11:42:50", "postId": 3 }
     ```
     An example of response body if the user is authenticated:
     ```json
-    {
-      "id": 25,
-      "text": "This is my favorite post!",
-      "timestamp": "2025-06-08 11:42:50",
-      "postId": 3,
-      "userName": "Fabio Neri",
-      "userId": 5,
-      "countInterestingMarks": 0,
-      "isInterestingForCurrentUser": false
-    }
+    { "id": 25, "text": "This is my favorite post!", "timestamp": "2025-06-08 11:42:50", "postId": 3,
+      "userName": "Fabio Neri", "userId": 5, "countInterestingMarks": 0, "isInterestingForCurrentUser": false }
     ```
     An example of an error:
     ```json
-    {
-      "error": "Database error while adding comment."
-    }
+    { "error": "Database error while adding comment." }
     ```
-  - **Codes**: `200 OK`, `422 Unprocessable Entity`, `500 Internal Server Error`.
+  - **Codes**: `200 OK`, `404 Not Found`, `409 Conflict` (comment limit reached), `422 Unprocessable Entity`, `500 Internal Server Error`.
 
 - GET `/api/comments/:id`: Retrieve an existing comment given its id. Note that such an API is needed to pre-fill the "text" field when editing a comment.
   - **Response body**: JSON object with information about the comment, or with error description. Note that the response body content is similar to the previous case.
     
     An example of an error:
     ```json
-    {
-      "error": "Database error while retrieving the single comment."
-    }
+    { "error": "Database error while retrieving the single comment." }
     ```
-  - **Codes**: `200 OK`, `404 Not Found`, `503 Service Unavailable`.
+  - **Codes**: `200 OK`, `404 Not Found`, `422 Unprocessable Entity`, `503 Service Unavailable`.
 
 - PUT `/api/comments/:id`: Update an existing comment (given its id) by providing the new text. Note that only the comment owner or an admin can perform this action.
   - **Request body**: JSON object with the new text of the comment:
     ```json
-    {
-      "text": "This is an updated comment!"
-    }
+    { "text": "This is an updated comment!" }
     ```
   - **Response body**: JSON object with the updated comment information, or with error description (the response is similar to the `GET /api/comments/:id` response).
   - **Codes**: `200 OK`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `422 Unprocessable Entity`, `503 Service Unavailable`.
@@ -164,9 +106,7 @@
 - PUT `/api/comments/:id/interesting`: Add / remove the interesting mark for an existing comment, given its id. Note that only autenticated users can perform this action.
   - **Request body**: JSON object containing the `interesting` field set to `true` or `false` to mark or unmark the comment.
     ```json
-    {
-      "interesting": true
-    }
+    { "interesting": true }
     ```
   - **Response body**: JSON value with the number of changes in case of success, otherwise a JSON object with the error.
   - **Codes**: `200 OK`, `400 Bad Request` (e.g., DB constraint violation), `401 Unauthorized`, `404 Not Found`, `422 Unprocessable Entity`, `503 Service Unavailable`.
@@ -176,37 +116,24 @@
 - POST `/api/sessions`: Authenticate the user. Note that this API is used for login.
   - **Request body**: JSON object with username (email of the user) and password:
     ```json
-    {
-      "username": "u1@p.it",
-      "password": "pwd"
-    }
+    { "username": "u1@p.it", "password": "pwd" }
     ```
   - **Response body**: JSON object with user information, or with error description:
     ```json
-    {
-      "id": 1,
-      "username": "u1@p.it",
-      "name": "Cristian",
-      "canDoTotp": true,
-      "isTotp": false
-    }
+    { "id": 1, "username": "u1@p.it", "name": "Cristian", "canDoTotp": true, "isTotp": false }
     ```
   - **Codes**: `200 OK`, `401 Unauthorized` (incorrect username and/or password).
 
 - POST `/api/login-totp`: Perform 2FA (2 Factor Authentication) using TOTP.
   - **Request body**: JSON object with the TOTP code:
     ```json
-    {
-      "code": 123456
-    }
+    { "code": 123456 }
     ```
   - **Response body**: JSON object indicating success or failure (e.g., due to invalid TOTP code).
   
     An example of success:
     ```json
-    {
-      "otp": "authorized"
-    }
+    { "otp": "authorized" }
     ```
   - **Codes**: `200 OK`, `401 Unauthorized` (invalid TOTP code).
 
@@ -215,19 +142,11 @@
 
     An example of response body if the user is authenticated:
     ```json
-    {
-      "id": 1,
-      "username": "u1@p.it",
-      "name": "Cristian",
-      "canDoTotp": true,
-      "isTotp": false
-    }
+    { "id": 1, "username": "u1@p.it", "name": "Cristian", "canDoTotp": true, "isTotp": false }
     ```
     An example of response body if the user is anonymous:
     ```json
-    {
-      "error": "Not authenticated."
-    }
+    { "error": "Not authenticated." }
     ```
   - **Codes**: `200 OK`, `401 Unauthorized`.
 
@@ -244,7 +163,8 @@
   - NOTE: it is a 1:N relationship, since a user can publish many posts, and a specific post is published by one specific user (i.e., the author).
 - Table `COMMENT`: id (primary key - autoincremented), text, timestamp, user_ID, post_ID
   - NOTE: it is a 1:N relationship, since a user can publish many comments, and a specific comment is published by one specific user (i.e., the author).
-- Table `INTERESTING`: user_ID, comment_ID
+- Table `INTERESTING`: user_ID, comment_ID (composite primary key)
+  - This table keeps track of which users have marked which comments as interesting.
   - NOTE: it is a N:N relationship (that is why an additional table is necessary), since a user can mark as interesting many comments, and a comment can be marked as interesting by many users at the same time.
 
 ## Main React Components
@@ -280,16 +200,16 @@
 - `LoginForm` (in `Auth.jsx`): Login form component that manages user authentication by asking for username (email) and password. It performs input validation, calls the login API, handles errors, and redirects users accordingly, including handling redirection to the 2FA page if applicable, otherwise it handles redirection to the homepage.
 
 
-## Screenshots of the main pages
+## Screenshot
+
+### Post creation page
+![Screenshot](./img/postcreation_page.png)
 
 ### Homepage
 ![Screenshot](./img/home_page.png)
 
 ### Login page
 ![Screenshot](./img/login_page.png)
-
-### Creation post page
-![Screenshot](./img/creationpost_page.png)
 
 
 ## Users Credentials

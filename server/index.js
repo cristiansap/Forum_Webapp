@@ -212,9 +212,38 @@ app.delete('/api/posts/:id', isLoggedIn,
 });
 
 
+// 4. Retrieve a single post, given its id.
+// GET /api/posts/<id>
+// Given a post id, this route retrieves the associated post.
+app.get('/api/posts/:id',
+  [
+    check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
+  ],
+  async (req, res) => {
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty()) {
+      return res.status(422).json(errors.errors);
+    }
+
+    const postId = req.params.id;
+
+    try {
+      const post = await postDao.getPostById(postId);
+
+      if (!post || post.error) {
+        res.status(404).json({ error: "Post not found." });   // post not found
+      } else {
+        res.json(post);   // post found
+      }
+    } catch (err) {
+      res.status(503).json({ error: 'Database error while retrieving the post.' });
+    }
+  }
+);
+
 /*** COMMENTS APIs ***/
 
-// 4. Retrieve the list of all comments associated with a specific post, given its id.
+// 5. Retrieve the list of all comments associated with a specific post, given its id.
 // GET /api/posts/<id>/comments
 // Given a post id, this route retrieves all associated comments.
 app.get('/api/posts/:id/comments',
@@ -222,8 +251,13 @@ app.get('/api/posts/:id/comments',
     check('id').isInt({min: 1}).toInt(),   // check: the id must represent a positive integer, then it is parsed to Int
   ],
   async (req, res) => {
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty()) {
+      return res.status(422).json(errors.errors);
+    }
+
     try {
-      const userId = req.user ? req.user.id : null;   // if there is no authenticated user, userId = null
+      const userId = req.user ? req.user.id : null;   // if the user is NOT authenticated, then userId = null
       const comments = await commentDao.getCommentsForPost(userId, req.params.id);
       res.json(comments);
     } catch (err) {
@@ -232,7 +266,7 @@ app.get('/api/posts/:id/comments',
   }
 );
 
-// 5. Create a new comment related to a specific post, by providing all relevant information.
+// 6. Create a new comment related to a specific post, by providing all relevant information.
 // POST /api/posts/<id>/comments
 // This route adds a new comment to a specific post of the forum.
 app.post('/api/posts/:id/comments',
@@ -248,7 +282,7 @@ app.post('/api/posts/:id/comments',
       return res.status(422).json(errors.errors); // error message is sent back as a json with the error info
     }
 
-    const userId = req.user ? req.user.id : null;   // if there is no authenticated user, userId = null
+    const userId = req.user ? req.user.id : null;   // if the user is NOT authenticated, then userId = null
 
     const comment = {
       text: req.body.text,
@@ -256,6 +290,18 @@ app.post('/api/posts/:id/comments',
     };
 
     try {
+      // Retrieve info about the post
+      const post = await postDao.getPostById(req.params.id);
+
+      if (post.error) {
+        return res.status(404).json({ error: 'Post not found.' });
+      }
+
+      // Check that the limit has NOT been reached
+      if (post.maxComments != null && post.commentCount >= post.maxComments) {
+        return res.status(409).json({ error: 'Maximum comment limit reached for this post.' });   // 409 Conflict
+      }
+
       const addedComment = await commentDao.addCommentToPost(comment, req.params.id);
       res.json(addedComment);
     } catch (err) {
@@ -263,7 +309,7 @@ app.post('/api/posts/:id/comments',
     }
 });
 
-// 6. Retrieve an existing comment given its id.
+// 7. Retrieve an existing comment given its id.
 // GET /api/comments/<id>
 // Given a comment id, this route retrieves the corresponding comment.
 app.get('/api/comments/:id',
@@ -272,7 +318,13 @@ app.get('/api/comments/:id',
   ],
   async (req, res) => {
     try {
-      const userId = req.user ? req.user.id : null;   // if there is no authenticated user, userId = null
+
+      const errors = validationResult(req).formatWith(errorFormatter);
+      if (!errors.isEmpty()) {
+        return res.status(422).json(errors.errors);
+      }
+
+      const userId = req.user ? req.user.id : null;   // if the user is NOT authenticated, then userId = null
 
       const comment = await commentDao.getCommentById(userId, req.params.id);
       if (comment.error) {
@@ -286,7 +338,7 @@ app.get('/api/comments/:id',
   }
 );
 
-// 7. Update an existing comment, by providing the new text.
+// 8. Update an existing comment, by providing the new text.
 // PUT /api/comments/<id>
 // This route allows to modify a comment, specifiying its id and the new text.
 app.put('/api/comments/:id', isLoggedIn,
@@ -333,7 +385,7 @@ app.put('/api/comments/:id', isLoggedIn,
   }
 );
 
-// 8. Delete an existing comment, given its id.
+// 9. Delete an existing comment, given its id.
 // DELETE /api/comments/<id>
 // Given a comment id, this route deletes the associated comment from the forum.
 app.delete('/api/comments/:id', isLoggedIn,
@@ -374,7 +426,7 @@ app.delete('/api/comments/:id', isLoggedIn,
   }
 );
 
-// 9. Mark / unmark an existing comment as interesting / not interesting, given its id.
+// 10. Mark / unmark an existing comment as interesting / not interesting, given its id.
 // PUT /api/comments/<id>/interesting
 // Given a comment id, this route modifies the associated interesting flag.
 app.put('/api/comments/:id/interesting', isLoggedIn,

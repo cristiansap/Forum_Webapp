@@ -121,6 +121,7 @@ function CommentsCollapse(props) {
 function PostCard(props) {
   const [showComments, setShowComments] = useState(false);
   const [commentsCache, setCommentsCache] = useState({});
+  const [localCommentCount, setLocalCommentCount] = useState(undefined);
 
   const handleToggleComments = async () => {
     if (!showComments) {
@@ -128,7 +129,12 @@ function PostCard(props) {
         // Fetching all comments for the post on which the user pressed the "Show Comments" button
         const fetchedComments = await API.getCommentsForPost(props.post.id);
         setCommentsCache(prev => ({ ...prev, [props.post.id]: fetchedComments }));
-        setShowComments(true);      // and then show comments
+
+        // Fetch updated post info with updated commentCount
+        const updatedPost = await API.getPostById(props.post.id);
+        setLocalCommentCount(updatedPost.commentCount);
+
+        setShowComments(true);    // show comments
       } catch (err) {
         props.showError('Comments failed to load. Please try again.');   // show an alert message to the user
       }
@@ -186,7 +192,7 @@ function PostCard(props) {
 
         <div className="mb-2 text-muted">
           Maximum number of comments: {props.post.maxComments !== null ? props.post.maxComments : 'unlimited'}<br />
-          Total number of comments: {props.post.commentCount}
+          Total number of comments: {localCommentCount ?? props.post.commentCount}
         </div>
 
         <div className="d-flex gap-2">
