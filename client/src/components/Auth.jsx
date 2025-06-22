@@ -17,11 +17,12 @@ function TotpForm(props) {
       .then(() => {
         setErrorMessage('');
         props.totpSuccessful();
+        props.setDirty(true);   // refresh list of posts after successful 2FA
         navigate('/');
       })
       .catch(() => {
         // NB: Generic error message
-        setErrorMessage('Wrong code, please try again');
+        setErrorMessage('Wrong code, please try again.');
       })
   }
 

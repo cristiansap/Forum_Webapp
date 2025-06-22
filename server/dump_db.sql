@@ -43,90 +43,90 @@ CREATE TABLE INTERESTING (
 -- The user ID is automatically inserted and incremented properly (thanks to autoincrement)
 INSERT INTO USER (email, name, hash, salt, secret)
 VALUES
-('u1@p.it','Cristian','6f8d5b84d60b6753c68ee195393c7b6b6939b23d579534daf9df73f74f16d74b','b99ab9a3a4861cfc','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
-('u2@p.it','Sofia','2893125de9d5723659c1f12f2e4467cf61d6e982c92a7f51d3c29e633f1f72d5','55421019646bef3f','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
-('u3@p.it','Anna','3757d2da3fd2f0a0148871b485d73c489c4a2d3267e30e3c160b985b28f32285','c188381ec1c96e9a',NULL),
-('u4@p.it','Marika','99b25e123ae69d781c13ac6db05144585c8e34631a4b8b5dde47e81e56e7f87c','43f6278c2eb21fcf',NULL),
-('u5@p.it','Fabio','ee9502ac5a0b3d99caabb28b8a3a4b60d3d389ac17f7a79e5c0a84b2604f459d','21a948f946a7aec6',NULL);
+('u1@p.it','Cristian Sapia','6f8d5b84d60b6753c68ee195393c7b6b6939b23d579534daf9df73f74f16d74b','b99ab9a3a4861cfc','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
+('u2@p.it','Sofia Rossi','2893125de9d5723659c1f12f2e4467cf61d6e982c92a7f51d3c29e633f1f72d5','55421019646bef3f','LXBSMDTMSP2I5XFXIYRGFVWSFI'),
+('u3@p.it','Anna Bianchi','3757d2da3fd2f0a0148871b485d73c489c4a2d3267e30e3c160b985b28f32285','c188381ec1c96e9a',NULL),
+('u4@p.it','Marika Verdi','99b25e123ae69d781c13ac6db05144585c8e34631a4b8b5dde47e81e56e7f87c','43f6278c2eb21fcf',NULL),
+('u5@p.it','Fabio Neri','ee9502ac5a0b3d99caabb28b8a3a4b60d3d389ac17f7a79e5c0a84b2604f459d','21a948f946a7aec6',NULL);
 
 
 ---- POSTS INSERTION ----
 
 -- POSTS by Cristian (user_ID = 1)
-INSERT INTO POST (title, user_ID, text, max_comments) VALUES
-('Welcome to the Forum', 1, 'This is the first official post from the admin team.', 5),
+INSERT INTO POST (title, user_ID, text, max_comments, timestamp) VALUES
+('Welcome to the Forum', 1, 'This is the first official post from the admin team.', 5, "2025-06-08 12:24:50"),
 ('Security Tips', 1,
 'Some basic tips to keep your accounts safe online.
 1. Use strong passwords.
 2. Enable two-factor authentication.
 3. Avoid clicking suspicious links.',
-4);                       -- example of multiline text for a post
+4, "2025-06-08 16:30:25");      -- example of multiline text for a post
 
 
 -- POSTS by Sofia (user_ID = 2)
-INSERT INTO POST (title, user_ID, text, max_comments) VALUES
-('New Features Coming Soon', 2, 'We are working on exciting new features. Stay tuned!', NULL),
-('Bug Report Guidelines', 2, 'Please follow these steps to report bugs effectively.', 3);
+INSERT INTO POST (title, user_ID, text, max_comments, timestamp) VALUES
+('New Features Coming Soon', 2, 'We are working on exciting new features. Stay tuned!', NULL, "2025-06-09 11:18:10"),
+('Bug Report Guidelines', 2, 'Please follow these steps to report bugs effectively.', 3, "2025-06-09 12:19:00");
 
 -- POSTS by Anna (user_ID = 3)
-INSERT INTO POST (title, user_ID, text, max_comments) VALUES
-('My Experience with React', 3, 'I want to share my learning journey with React.', 2),
-('Study Tips for Exams', 3, 'Organize your study sessions and take regular breaks!', NULL);
+INSERT INTO POST (title, user_ID, text, max_comments, timestamp) VALUES
+('My Experience with React', 3, 'I want to share my learning journey with React.', 2, "2025-06-09 11:40:55"),
+('Study Tips for Exams', 3, 'Organize your study sessions and take regular breaks!', NULL, "2025-06-12 10:20:12");
 
 -- POSTS by Marika (user_ID = 4)
-INSERT INTO POST (title, user_ID, text, max_comments) VALUES
-('Photography Passion', 4, 'Sharing some of my favorite moments captured on camera.', 5),
-('Travel Diary', 4, 'My travel notes from last summer in Italy.', NULL);
+INSERT INTO POST (title, user_ID, text, max_comments, timestamp) VALUES
+('Photography Passion', 4, 'Sharing some of my favorite moments captured on camera.', 5, "2025-06-11 22:34:65"),
+('Travel Diary', 4, 'My travel notes from last summer in Italy.', NULL, "2025-06-13 23:12:00");
 
 
 
 ---- COMMENTS INSERTION ----
 
 -- Comments on post ID 1 (Cristian, max 5)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
 ('Great start!
-I hope this forum grows quickly.', 2, 1),       -- example of multiline text for a comment
-('Looking forward to more updates.', NULL, 1),
-('Nice job.', 3, 1),
-('Well done!', 4, 1),
-('Very informative.', 5, 1); -- maximum reached
+I hope this forum grows quickly.', 2, 1, "2025-06-08 15:35:12"),       -- example of multiline text for a comment
+('Looking forward to more updates.', NULL, 1, "2025-06-08 15:40:55"),
+('Nice job.', 3, 1, "2025-06-08 15:29:18"),
+('Well done!', 4, 1, "2025-06-08 15:50:03"),
+('Very informative.', 5, 1, "2025-06-08 16:02:44"); -- maximum reached
 
 -- Comments on post ID 2 (Cristian, max 4) -> NOTE: 3 comments (1 less than the maximum)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Thanks for the tips!', NULL, 2),
-('Very helpful.', 4, 2),
-('Good reminder.', 3, 2); -- STOP: 1 less than the maximum
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
+('Thanks for the tips!', NULL, 2, "2025-06-08 16:40:22"),
+('Very helpful.', 4, 2, "2025-06-08 17:05:11"),
+('This post really made me think. I often overlook the importance of small habits in cybersecurity, like regularly updating my passwords or checking for suspicious activity. Thank you for the clear and practical tips — I’m definitely going to implement some of these starting today!', 3, 2, "2025-06-08 16:45:38"); -- STOP: 1 less than the maximum
 
 -- Comments on post ID 3 (Sofia, no max)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Can’t wait to see them!', 1, 3),
-('Awesome!', 4, 3);
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
+('Can’t wait to see them!', 1, 3, "2025-06-09 11:50:05"),
+('Awesome!', 4, 3, "2025-06-09 11:45:22");
 
 -- Comments on post ID 4 (Sofia, max 3)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Thanks for the guide.', 5, 4),
-('Clear and helpful.', NULL, 4),
-('I’ll follow this.', 3, 4); -- maximum reached
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
+('Thanks for the guide.', 5, 4, "2025-06-09 12:20:31"),
+('Clear and helpful.', NULL, 4, "2025-06-09 12:25:10"),
+('I’ll follow this.', 3, 4, "2025-06-09 12:30:54"); -- maximum reached
 
 -- Comments on post ID 5 (Anna, max 2) -> NOTE: 1 comment (1 less than the maximum)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Great insights, thank you!', 2, 5);  -- STOP: 1 less than the maximum
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
+('I appreciate you sharing your experience with React. It’s always motivating to read about other people’s learning. I’m currently going through similar struggles with managing state and components, so your story gives me hope that I’ll improve with time and practice too!', 2, 5, "2025-06-12 10:45:20");  -- STOP: 1 less than the maximum
 
 -- Comments on post ID 6 (Anna, no max)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Good advice.', 1, 6),
-('Thanks!', NULL, 6);
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
+('Good advice.', 1, 6, "2025-06-12 11:00:42"),
+('Thanks!', NULL, 6, "2025-06-12 11:10:35");
 
 -- Comments on post ID 7 (Marika, max 5)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Love this!', 5, 7),
-('Your shots are amazing.', NULL, 7),
-('Keep sharing!', 3, 7);
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
+('Love this!', 5, 7, "2025-06-11 22:45:11"),
+('Your shots are amazing.', NULL, 7, "2025-06-11 22:50:22"),
+('Keep sharing!', 3, 7, "2025-06-11 22:39:55");
 
 -- Comments on post ID 8 (Marika, no max)
-INSERT INTO COMMENT (text, user_ID, post_ID) VALUES
-('Italy is beautiful!', 2, 8),
-('Nice post!', 1, 8);
+INSERT INTO COMMENT (text, user_ID, post_ID, timestamp) VALUES
+('Italy is beautiful!', 2, 8, "2025-06-13 23:20:10"),
+('Nice post!', 1, 8, "2025-06-13 23:15:08");
 
 
 

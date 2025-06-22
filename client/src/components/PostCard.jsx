@@ -207,7 +207,7 @@ function PostCard(props) {
                 Add Comment
               </Button>
               <span className="tooltip-text-add-comment-button">
-                Ops! Maximum number of comments reached.
+                Ops! Comment limit reached.
               </span>
             </div>
           ) : (

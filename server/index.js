@@ -43,7 +43,7 @@ passport.use(new LocalStrategy(
   async function verify(username, password, callback) {
     const user = await userDao.getUser(username, password)
     if (!user)
-      return callback(null, false, 'Incorrect username or password');
+      return callback(null, false, 'Incorrect username or password.');
 
     return callback(null, user); // NOTE: user info in the session (all fields returned by userDao.getUser)
   }
@@ -96,7 +96,7 @@ const isLoggedIn = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  return res.status(401).json({ error: 'Not authorized' });
+  return res.status(401).json({ error: 'Not authorized.' });
 }
 
 /** Two-Factor Authentication (2FA) verification middleware.
@@ -107,7 +107,7 @@ const isLoggedIn = (req, res, next) => {
 function isTotp(req, res, next) {
   if (req.session.method === 'totp')
     return next();
-  return res.status(401).json({ error: 'Missing TOTP authentication' });
+  return res.status(401).json({ error: 'Missing TOTP authentication.' });
 }
 
 /*** Utility Functions ***/
@@ -132,7 +132,7 @@ app.get('/api/posts',
       const posts = await postDao.listPosts();
       res.json(posts);
     } catch (err) {
-      res.status(500).json({ error: 'Database error while retrieving posts' });
+      res.status(500).json({ error: 'Database error while retrieving posts.' });
     }
   }
 );
@@ -399,7 +399,7 @@ app.put('/api/comments/:id/interesting', isLoggedIn,
       const result = interesting ? await commentDao.markCommentAsInteresting(userId, commentId)
                                 : await commentDao.unmarkCommentAsInteresting(userId, commentId);
       if (result.error)
-        res.status(400).json(result);
+        res.status(400).json(result);   // 400 Bad Request
       else
         res.json(result);
     } catch (err) {
@@ -416,7 +416,7 @@ function clientUserInfo(req) {
   return { id: user.id, username: user.username, name: user.name, canDoTotp: user.secret ? true : false, isTotp: req.session.method === 'totp' };
 }
 
-// POST /api/sessions 
+// POST /api/sessions
 // This route is used for performing login.
 app.post('/api/sessions', function (req, res, next) {
   passport.authenticate('local', (err, user, info) => {
@@ -455,7 +455,7 @@ app.get('/api/sessions/current', (req, res) => {
     res.status(200).json(clientUserInfo(req));
   }
   else
-    res.status(401).json({ error: 'Not authenticated' });
+    res.status(401).json({ error: 'Not authenticated.' });
 });
 
 // DELETE /api/sessions/current

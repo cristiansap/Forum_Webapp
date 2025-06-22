@@ -16,7 +16,7 @@ function NotFoundLayout() {
       <div className="d-flex flex-column justify-content-center align-items-center text-center">
         <h2>This route is not valid!</h2>
         <Link to="/">
-          <Button variant="primary">Go back to the main page!</Button>
+          <Button variant="primary" className="main-color">Go back to the main page!</Button>
         </Link>
       </div>
     );
@@ -31,7 +31,7 @@ function LoginLayout(props) {
                                                     // Using 'replace' to avoid adding a new entry to the browser history,
                                                     // so that the user cannot navigate back to the previous page.
             } else {
-                return <TotpLayout totpSuccessful={() => props.setLoggedInAsAdmin(true)} />;
+                return <TotpLayout totpSuccessful={() => props.setLoggedInAsAdmin(true)} setDirty={props.setDirty} />;
             }
         } else {
             return <Navigate replace to='/' />; // authenticated user that cannot be admin is redirected to home page
@@ -49,7 +49,7 @@ function TotpLayout(props) {
     return (
         <Row>
             <Col>
-                <TotpForm totpSuccessful={props.totpSuccessful} />
+                <TotpForm totpSuccessful={props.totpSuccessful} setDirty={props.setDirty} />
             </Col>
         </Row>
     );

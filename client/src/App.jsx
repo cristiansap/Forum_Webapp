@@ -95,6 +95,7 @@ function App() {
     try {
       const user = await API.logIn(credentials);
       setUser(user);
+      setDirty(true);   // refresh list of posts after successful login
     } catch (err) {
       // error is handled and visualized in the login form, so do not manage error, but throw it
       throw err;
@@ -126,8 +127,9 @@ function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
       })
       .catch((err) => {
+        navigate('/');    // navigate to the main page to see the error
+        window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
         handleErrors(err);
-        throw err;    // propagate the error to the caller
       });
   }
 
@@ -148,7 +150,11 @@ function App() {
         navigate('/');
         window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
       })
-      .catch((err) => handleErrors(err));
+      .catch((err) => {
+        navigate('/');    // navigate to the main page to see the error
+        window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
+        handleErrors(err);
+      });
   }
 
   function editComment(commentId, newComment) {
@@ -159,7 +165,11 @@ function App() {
         navigate('/');
         window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
       })
-      .catch((err) => handleErrors(err));
+      .catch((err) => {
+        navigate('/');    // navigate to the main page to see the error
+        window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
+        handleErrors(err);
+      });
   }
 
   function deleteComment(commentId) {
@@ -181,8 +191,9 @@ function App() {
         <Route path="add-comment/:postId" element={<AddCommentLayout addCommentToPost={addCommentToPost} handleReturnHome={handleReturnHome} />} />
         <Route path="edit-comment/:id" element={<EditCommentLayout editComment={editComment} setMessage={setMessage} 
                                                   showError={showError} handleReturnHome={handleReturnHome} />} />
+        <Route path="/login" element={<LoginLayout login={handleLogin} user={user} loggedInAsAdmin={loggedInAsAdmin} setLoggedInAsAdmin={setLoggedInAsAdmin}
+                                        handleReturnHome={handleReturnHome} setDirty={setDirty} />} />
         <Route path="*" element={<NotFoundLayout />} />
-        <Route path="/login" element={<LoginLayout login={handleLogin} user={user} loggedInAsAdmin={loggedInAsAdmin} setLoggedInAsAdmin={setLoggedInAsAdmin} handleReturnHome={handleReturnHome} />} />
       </Route>
     </Routes>
   )

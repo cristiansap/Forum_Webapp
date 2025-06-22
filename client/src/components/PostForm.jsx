@@ -24,21 +24,16 @@ function PostForm(props) {
 
         // Perform data validation
         if (newPost.title.trim().length === 0) {
-            setErrorMsg('Title of the post seems to be empty');
+            setErrorMsg('Title of the post seems to be empty.');
             return;
         }
         if (newPost.text.trim().length == 0) {
-            setErrorMsg('Text of the post seems to be empty');
+            setErrorMsg('Text of the post seems to be empty.');
             return;
         }
         else {
             // Proceed to update the data
-            try {
-                await props.createPost(newPost);    // it should return a Promise
-            } catch (err) {
-                const message = err?.error || 'Something went wrong while creating the post.';
-                setErrorMsg(message);
-            }
+            props.createPost(newPost);    // it should return a Promise
         }
     }
 
