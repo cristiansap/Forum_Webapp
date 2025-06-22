@@ -127,6 +127,7 @@ function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
       })
       .catch((err) => {
+        setDirty(true);
         navigate('/');    // navigate to the main page to see the error
         window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
         handleErrors(err);
@@ -151,6 +152,7 @@ function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
       })
       .catch((err) => {
+        setDirty(true);
         navigate('/');    // navigate to the main page to see the error
         window.scrollTo({ top: 0, behavior: 'smooth' });   // scroll the window smoothly to the top of the page
         handleErrors(err);
