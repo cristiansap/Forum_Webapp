@@ -211,6 +211,7 @@
 
 
 ## Users Credentials
+Note that passwords are set to "pwd" for the sake of simplicity during development.
 
 | email       | password    | name             | admin       |
 |-------------|-------------|------------------|-------------|
