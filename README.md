@@ -11,6 +11,7 @@ Full-stack web application built with React and Node.js.
 ```
 
 ## Setup & Run
+Run both client and server in separate terminals to start the application.
 
 ### Client
 
@@ -27,8 +28,6 @@ cd server
 npm ci
 nodemon index.js
 ```
-
-Run both client and server in separate terminals to start the application.
 
 ## React Client Application Routes
 
