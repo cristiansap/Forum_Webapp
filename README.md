@@ -1,5 +1,35 @@
 # Forum WebApp
 
+Full-stack web application built with React and Node.js.
+
+## Project Structure
+
+```
+├── client/          # React frontend
+├── server/          # Node.js backend
+└── img/             # Image assets
+```
+
+## Setup & Run
+
+### Client
+
+```bash
+cd client
+npm ci
+npm run dev
+```
+
+### Server
+
+```bash
+cd server
+npm ci
+nodemon index.js
+```
+
+Run both client and server in separate terminals to start the application.
+
 ## React Client Application Routes
 
 - Route `/`: display the homepage with all forum posts. Allows viewing and deleting posts, and expanding posts with associated comments.
