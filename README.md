@@ -11,7 +11,7 @@ Full-stack web application built with React and Node.js.
 ```
 
 ## Setup & Run
-Run both client and server in separate terminals to start the application.
+Clone the repository, then run both client and server in separate terminals to start the application.
 
 ### Client
 
